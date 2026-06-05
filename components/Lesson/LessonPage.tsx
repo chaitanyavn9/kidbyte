@@ -9,6 +9,11 @@ import CpuAnimation from "@/components/animations/CpuAnimation";
 import RamAnimation from "@/components/animations/RamAnimation";
 import BinaryAnimation from "@/components/animations/BinaryAnimation";
 import PixelAnimation from "@/components/animations/PixelAnimation";
+import DeviceAnimation from "@/components/animations/DeviceAnimation";
+
+function DeviceAnimationWrapper({ lessonId }: { lessonId: string }) {
+  return <DeviceAnimation lessonId={lessonId} />;
+}
 
 const ANIMATION_MAP: Record<string, React.ComponentType> = {
   folder: FolderAnimation,
@@ -16,6 +21,10 @@ const ANIMATION_MAP: Record<string, React.ComponentType> = {
   ram: RamAnimation,
   binary: BinaryAnimation,
   pixels: PixelAnimation,
+  computer: () => <DeviceAnimationWrapper lessonId="computer" />,
+  laptop:   () => <DeviceAnimationWrapper lessonId="laptop" />,
+  tablet:   () => <DeviceAnimationWrapper lessonId="tablet" />,
+  phone:    () => <DeviceAnimationWrapper lessonId="phone" />,
 };
 
 type Tab = "story" | "explore" | "quiz";

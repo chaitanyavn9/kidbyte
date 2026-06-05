@@ -16,6 +16,10 @@ const LESSON_BG: Record<string, { from: string; to: string }> = {
   ram:        { from: "#A78BFA", to: "#7C3AED" },
   binary:     { from: "#34D399", to: "#059669" },
   pixels:     { from: "#F9A8D4", to: "#EC4899" },
+  computer:   { from: "#93C5FD", to: "#1D7CFF" },
+  laptop:     { from: "#C4B5FD", to: "#7B61FF" },
+  tablet:     { from: "#FED7AA", to: "#FF8A00" },
+  phone:      { from: "#FCA5A5", to: "#FF4081" },
 };
 
 function ExploreContent() {
