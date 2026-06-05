@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KidByte — Product Presentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fira+Code:wght@500&display=swap');
+
+    :root {
+      --blue:   #1D7CFF;
+      --orange: #FF8A00;
+      --purple: #7B61FF;
+      --lime:   #8BEA00;
+      --navy:   #082A63;
+      --pink:   #FF4081;
+      --teal:   #00BCD4;
+      --bg:     #F8FBFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--navy);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(8, 42, 99, 0.95);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 60px;
+    }
+    nav .logo { display: flex; align-items: center; gap: 10px; }
+    nav .logo img { height: 36px; object-fit: contain; }
+    nav .logo span { color: white; font-weight: 900; font-size: 1.2rem; }
+    nav ul { display: flex; gap: .25rem; list-style: none; }
+    nav ul a {
+      color: rgba(255,255,255,.75); font-weight: 700; font-size: .8rem;
+      padding: .4rem .9rem; border-radius: 2rem; text-decoration: none;
+      transition: background .2s, color .2s;
+    }
+    nav ul a:hover { background: rgba(255,255,255,.15); color: white; }
+    .slide-counter {
+      color: rgba(255,255,255,.5); font-weight: 700; font-size: .8rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── SLIDES ── */
+    .slide {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 80px 2rem 4rem;
+      position: relative; overflow: hidden;
+    }
+
+    /* ── HERO SLIDE ── */
+    #slide-1 {
+      background: linear-gradient(160deg, #050F2E 0%, #0A2FA8 50%, #1D7CFF 100%);
+      text-align: center;
+    }
+    #slide-1 .blobs { position: absolute; inset: 0; pointer-events: none; }
+    #slide-1 .blob {
+      position: absolute; border-radius: 50%;
+      animation: blobFloat 8s ease-in-out infinite;
+    }
+    @keyframes blobFloat {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%      { transform: translate(20px,-20px) scale(1.1); }
+    }
+    #slide-1 .logo-wrap { position: relative; z-index: 1; }
+    #slide-1 img.main-logo {
+      width: min(480px, 90vw);
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,.4));
+      animation: logoFloat 4s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+    #slide-1 .tagline {
+      color: rgba(255,255,255,.9); font-size: clamp(1rem, 2.5vw, 1.4rem);
+      font-weight: 700; margin-top: 1rem; letter-spacing: .05em;
+    }
+    #slide-1 .badges {
+      display: flex; flex-wrap: wrap; gap: .5rem;
+      justify-content: center; margin-top: 2rem;
+    }
+    #slide-1 .badge {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+      color: white; font-weight: 800; font-size: .8rem;
+      padding: .4rem 1rem; border-radius: 2rem;
+    }
+    #slide-1 .scroll-hint {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,.5); font-size: .8rem; font-weight: 700;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
+
+    /* ── SECTION HEADING ── */
+    .section-tag {
+      font-size: .75rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase;
+      padding: .3rem 1rem; border-radius: 2rem; margin-bottom: 1rem; display: inline-block;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      color: var(--navy); text-align: center; margin-bottom: .75rem;
+    }
+    .slide-subtitle {
+      color: #64748b; font-size: 1.1rem; font-weight: 600;
+      text-align: center; max-width: 620px; line-height: 1.6;
+      margin-bottom: 3rem;
+    }
+
+    /* ── GRID HELPERS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: 100%; max-width: 1000px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; width: 100%; max-width: 1100px; }
+    @media(max-width:768px) {
+      .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:480px) {
+      .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; }
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: white; border-radius: 1.5rem; padding: 1.75rem;
+      box-shadow: 0 4px 20px rgba(29,124,255,.08);
+      border: 2px solid rgba(29,124,255,.06);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(29,124,255,.18);
+    }
+    .card .icon { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+    .card h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: .4rem; }
+    .card p  { color: #64748b; font-size: .9rem; line-height: 1.6; }
+
+    /* ── PRINCIPLE CARDS ── */
+    .principle {
+      display: flex; align-items: flex-start; gap: 1rem;
+      background: white; border-radius: 1.25rem; padding: 1.25rem 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06); border-left: 4px solid var(--lime);
+    }
+    .principle .check { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+    .principle h4 { font-weight: 900; font-size: 1rem; }
+    .principle p  { color: #64748b; font-size: .85rem; margin-top: .2rem; }
+
+    /* ── ANALOGY TABLE ── */
+    .analogy-table {
+      width: 100%; max-width: 860px; border-collapse: separate;
+      border-spacing: 0 .6rem;
+    }
+    .analogy-table thead th {
+      text-align: left; font-weight: 900; font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: #94a3b8; padding: .5rem 1.25rem;
+    }
+    .analogy-table tbody tr {
+      background: white; border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .analogy-table tbody td {
+      padding: 1rem 1.25rem; font-size: .95rem;
+    }
+    .analogy-table tbody td:first-child {
+      font-weight: 900; color: var(--navy); border-radius: 1rem 0 0 1rem;
+    }
+    .analogy-table tbody td:last-child {
+      color: #475569; border-radius: 0 1rem 1rem 0; font-style: italic;
+    }
+
+    /* ── ANIMATION DEMO CARDS ── */
+    .anim-card {
+      background: white; border-radius: 1.5rem; overflow: hidden;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+      transition: transform .25s;
+    }
+    .anim-card:hover { transform: translateY(-4px); }
+    .anim-card .top {
+      height: 110px; display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; position: relative;
+    }
+    .anim-card .body { padding: 1.2rem 1.5rem; }
+    .anim-card h4 { font-weight: 900; font-size: 1rem; margin-bottom: .3rem; }
+    .anim-card p  { color: #64748b; font-size: .85rem; line-height: 1.5; }
+
+    /* ── TECH STACK ── */
+    .tech-pill {
+      display: flex; align-items: center; gap: .75rem;
+      background: white; border-radius: 1rem; padding: .9rem 1.25rem;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07); font-weight: 800;
+    }
+    .tech-pill .tech-icon { font-size: 1.6rem; }
+    .tech-pill .tech-name { font-size: .95rem; color: var(--navy); }
+    .tech-pill .tech-role { font-size: .78rem; color: #94a3b8; font-weight: 600; }
+
+    /* ── ROADMAP ── */
+    .roadmap-phase {
+      background: white; border-radius: 1.5rem; padding: 1.75rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    }
+    .roadmap-phase h3 {
+      font-weight: 900; font-size: 1.1rem; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .roadmap-phase ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+    .roadmap-phase ul li {
+      display: flex; align-items: flex-start; gap: .6rem;
+      font-size: .9rem; color: #475569;
+    }
+    .done   { color: #22c55e !important; font-weight: 900; flex-shrink: 0; }
+    .todo   { color: #94a3b8 !important; flex-shrink: 0; }
+
+    /* ── USER FLOW ── */
+    .flow-steps {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: .5rem; justify-content: center; max-width: 900px;
+    }
+    .flow-step {
+      background: white; border-radius: 1.25rem; padding: 1.25rem 1.5rem;
+      text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,.07);
+      min-width: 120px; flex: 1;
+    }
+    .flow-step .step-emoji { font-size: 2rem; display: block; margin-bottom: .4rem; }
+    .flow-step p { font-weight: 800; font-size: .85rem; color: var(--navy); }
+    .flow-arrow { font-size: 1.4rem; color: #94a3b8; font-weight: 900; }
+
+    /* ── PRIVACY SLIDE ── */
+    #slide-privacy {
+      background: linear-gradient(160deg, #050F2E 0%, #082A63 100%);
+    }
+    #slide-privacy .slide-title { color: white; }
+    #slide-privacy .slide-subtitle { color: rgba(255,255,255,.6); }
+    .priv-item {
+      display: flex; align-items: center; gap: 1rem;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 1rem; padding: 1rem 1.5rem; color: white;
+    }
+    .priv-item .p-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .priv-item h4 { font-weight: 900; font-size: 1rem; }
+    .priv-item p  { font-size: .82rem; color: rgba(255,255,255,.55); margin-top: .1rem; }
+
+    /* ── FINAL SLIDE ── */
+    #slide-final {
+      background: linear-gradient(160deg, #082A63 0%, #1D7CFF 100%);
+      text-align: center;
+    }
+    #slide-final .big-emoji {
+      font-size: 5rem; display: block; margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    #slide-final h2 { font-size: clamp(2rem,5vw,3.5rem); font-weight: 900; color: white; margin-bottom: 1rem; }
+    #slide-final p  { color: rgba(255,255,255,.7); font-size: 1.1rem; max-width: 600px; line-height: 1.7; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem; }
+    .btn-primary {
+      background: linear-gradient(90deg, #FF8A00, #FFD700);
+      color: #082A63; font-weight: 900; font-size: 1rem;
+      padding: 1rem 2.5rem; border-radius: 2rem; text-decoration: none;
+      box-shadow: 0 8px 24px rgba(255,138,0,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: scale(1.05); box-shadow: 0 12px 32px rgba(255,138,0,.5); }
+    .btn-secondary {
+      background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3);
+      color: white; font-weight: 900; font-size: 1rem;
+      padding: 1rem 2.5rem; border-radius: 2rem; text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.25); }
+
+    /* ── BACKGROUNDS ── */
+    .bg-white-section  { background: #FFFFFF; }
+    .bg-light-section  { background: var(--bg); }
+    .bg-blue-section   { background: linear-gradient(135deg, #EEF4FF 0%, #F0EEFF 100%); }
+
+    /* ── SLIDE NUMBERS ── */
+    .slide-num {
+      position: absolute; bottom: 1.5rem; right: 2rem;
+      font-size: .75rem; font-weight: 800; color: rgba(0,0,0,.15);
+    }
+    .slide-num.light { color: rgba(255,255,255,.2); }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="logo">
+    <img src="KidByte_Logo.png" alt="KidByte" onerror="this.style.display='none'"/>
+    <span>KidByte</span>
+  </div>
+  <ul>
+    <li><a href="#slide-1">Home</a></li>
+    <li><a href="#slide-problem">Problem</a></li>
+    <li><a href="#slide-analogies">Analogies</a></li>
+    <li><a href="#slide-features">Features</a></li>
+    <li><a href="#slide-animations">Animations</a></li>
+    <li><a href="#slide-flow">User Flow</a></li>
+    <li><a href="#slide-tech">Tech</a></li>
+    <li><a href="#slide-privacy">Privacy</a></li>
+    <li><a href="#slide-roadmap">Roadmap</a></li>
+  </ul>
+  <span class="slide-counter">v1.0 · MVP</span>
+</nav>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 1 — HERO
+═══════════════════════════════════ -->
+<section class="slide" id="slide-1">
+  <div class="blobs">
+    <div class="blob" style="width:400px;height:400px;background:rgba(123,97,255,.15);top:-100px;left:-100px;animation-delay:0s;"></div>
+    <div class="blob" style="width:300px;height:300px;background:rgba(255,138,0,.12);top:10%;right:-80px;animation-delay:2s;"></div>
+    <div class="blob" style="width:200px;height:200px;background:rgba(139,234,0,.1);bottom:10%;left:20%;animation-delay:4s;"></div>
+  </div>
+
+  <div class="logo-wrap" style="position:relative;z-index:1;text-align:center;">
+    <img class="main-logo" src="KidByte_Logo.png" alt="KidByte"
+         onerror="this.outerHTML='<h1 style=\'font-size:5rem;font-weight:900;background:linear-gradient(90deg,#FF8A00,#1D7CFF,#7B61FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;\'>KidByte</h1>'" />
+    <p class="tagline">Touch &bull; Play &bull; Learn &bull; Discover</p>
+    <p style="color:rgba(255,255,255,.55);font-size:.95rem;margin-top:.5rem;font-weight:600;">
+      An immersive, ad-free educational platform for children aged 5–14
+    </p>
+    <div class="badges">
+      <span class="badge">✅ Zero Ads</span>
+      <span class="badge">✅ Zero Tracking</span>
+      <span class="badge">✅ No Data Stored</span>
+      <span class="badge">✅ Always Free</span>
+      <span class="badge">🚀 Next.js + Framer Motion</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">↓ Scroll to explore</div>
+  <span class="slide-num light">01 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 2 — THE PROBLEM
+═══════════════════════════════════ -->
+<section class="slide bg-white-section" id="slide-problem">
+  <span class="section-tag" style="background:#FEF3C7;color:#D97706;">🔍 The Problem</span>
+  <h2 class="slide-title">Kids are surrounded by technology<br/>but nobody explains it simply.</h2>
+  <p class="slide-subtitle">
+    Most edtech platforms either skip hardware entirely, use adult vocabulary, or require subscriptions with ads.
+    There's no single destination that goes from "what is a folder" to "what is a pixel" — in language a 6-year-old understands.
+  </p>
+
+  <div class="grid-3">
+    <div class="card" style="border-color:#FEE2E2;">
+      <span class="icon">😵</span>
+      <h3 style="color:#EF4444;">Complex Language</h3>
+      <p>Wikipedia and docs use technical terms. Kids bounce off immediately.</p>
+    </div>
+    <div class="card" style="border-color:#FEF3C7;">
+      <span class="icon">💸</span>
+      <h3 style="color:#F59E0B;">Paywalls & Ads</h3>
+      <p>BrainPOP charges subscriptions. Most free sites are littered with ads aimed at children.</p>
+    </div>
+    <div class="card" style="border-color:#E0E7FF;">
+      <span class="icon">🎯</span>
+      <h3 style="color:#6366F1;">Too Narrow</h3>
+      <p>Scratch covers coding only. CS Unplugged has no interactivity. Nothing covers hardware + OS + binary + pixels all in one place.</p>
+    </div>
+  </div>
+  <span class="slide-num">02 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 3 — THE SOLUTION: ANALOGIES
+═══════════════════════════════════ -->
+<section class="slide bg-blue-section" id="slide-analogies">
+  <span class="section-tag" style="background:#DBEAFE;color:#1D4ED8;">💡 The KidByte Approach</span>
+  <h2 class="slide-title">Every concept explained as something<br/>the child already knows.</h2>
+  <p class="slide-subtitle">
+    No jargon. No textbooks. Just real-world analogies that click instantly.
+  </p>
+
+  <table class="analogy-table">
+    <thead>
+      <tr>
+        <th>Tech Concept</th>
+        <th>KidByte Explains It As…</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>📁 Folder</td>
+        <td>"A room in your house. Knock twice (double-click) to open the door."</td>
+      </tr>
+      <tr>
+        <td>🖱️ Drag & Drop</td>
+        <td>"Like mom twisting your ear and pulling you to sit where she wants."</td>
+      </tr>
+      <tr>
+        <td>🧠 CPU</td>
+        <td>"Your brain — it tells every part of the computer what to do."</td>
+      </tr>
+      <tr>
+        <td>📚 RAM</td>
+        <td>"Your study table — open books on it while you work. Cleared when you leave."</td>
+      </tr>
+      <tr>
+        <td>🎨 GPU</td>
+        <td>"An artist who paints every tiny dot on your screen, at lightning speed."</td>
+      </tr>
+      <tr>
+        <td>🔢 Binary</td>
+        <td>"Millions of tiny light switches — ON is 1, OFF is 0. That's all computers speak!"</td>
+      </tr>
+      <tr>
+        <td>🖼️ Pixel</td>
+        <td>"A mosaic tile. Millions of tiny coloured tiles make the picture on your screen."</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="slide-num">03 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 4 — FEATURES
+═══════════════════════════════════ -->
+<section class="slide bg-white-section" id="slide-features">
+  <span class="section-tag" style="background:#F0EEFF;color:#7B61FF;">✨ Features</span>
+  <h2 class="slide-title">Everything a curious kid needs</h2>
+  <p class="slide-subtitle">
+    7 topic categories · 20+ lessons planned · 3 age groups · 5 live interactive animations
+  </p>
+
+  <div class="grid-4">
+    <div class="card">
+      <span class="icon">📚</span>
+      <h3>Age-Adaptive Lessons</h3>
+      <p>Same topic, three depth levels: 5–7, 8–10, 11–14. Content auto-adjusts to the child's age.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🎮</span>
+      <h3>Interactive Animations</h3>
+      <p>Tap the folder to knock it open. Watch CPU signals pulse out. Fill the RAM table by opening apps.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🧩</span>
+      <h3>Age-Matched Quiz</h3>
+      <p>Questions pitched at the right difficulty. Instant explanation after every answer.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🏅</span>
+      <h3>Digital Badge PDF</h3>
+      <p>Name in binary, age in hex, emoji cheatsheet. Generated locally — never uploaded.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🎭</span>
+      <h3>Avatar Onboarding</h3>
+      <p>3-step card: enter name → pick age → choose avatar. Sets the tone for the whole session.</p>
+    </div>
+    <div class="card">
+      <span class="icon">👨‍👩‍👧</span>
+      <h3>Parent Zone</h3>
+      <p>Full privacy explanation, safe-by-design summary, age-group breakdown for parents.</p>
+    </div>
+    <div class="card">
+      <span class="icon">❤️</span>
+      <h3>Donation Page</h3>
+      <p>UPI QR for India. International options coming. No pressure — learning stays free always.</p>
+    </div>
+    <div class="card">
+      <span class="icon">♿</span>
+      <h3>Accessible</h3>
+      <p>Keyboard nav, focus rings, reduced-motion support, screen-reader friendly markup.</p>
+    </div>
+  </div>
+  <span class="slide-num">04 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 5 — ANIMATIONS
+═══════════════════════════════════ -->
+<section class="slide bg-light-section" id="slide-animations">
+  <span class="section-tag" style="background:#FEF9C3;color:#CA8A04;">🎬 Interactive Animations</span>
+  <h2 class="slide-title">Learn by doing, not reading</h2>
+  <p class="slide-subtitle">
+    Every lesson has a hands-on Framer Motion demo the child interacts with — not just watches.
+  </p>
+
+  <div class="grid-3" style="max-width:960px;">
+    <div class="anim-card">
+      <div class="top" style="background:linear-gradient(135deg,#FCD34D,#F59E0B);">📁</div>
+      <div class="body">
+        <h4>Knock-Knock Folder</h4>
+        <p>Click the folder once — it shakes. Click again — it opens and reveals files inside. Just like knocking on a door twice.</p>
+      </div>
+    </div>
+    <div class="anim-card">
+      <div class="top" style="background:linear-gradient(135deg,#60A5FA,#3B82F6);">🧠</div>
+      <div class="body">
+        <h4>CPU Brain Signals</h4>
+        <p>Animated pulses shoot out from the CPU chip to Screen, Sound, Memory, Mouse, Keyboard, Fan — in real time.</p>
+      </div>
+    </div>
+    <div class="anim-card">
+      <div class="top" style="background:linear-gradient(135deg,#A78BFA,#7C3AED);">📚</div>
+      <div class="body">
+        <h4>RAM Study Table</h4>
+        <p>Open and close apps — watch the RAM bar fill and empty. Too many apps → the table overflows → computer slows!</p>
+      </div>
+    </div>
+    <div class="anim-card">
+      <div class="top" style="background:linear-gradient(135deg,#34D399,#059669);">🔢</div>
+      <div class="body">
+        <h4>Live Binary Converter</h4>
+        <p>Type your name — see each letter converted to 8-bit binary with animated light-switch visualisation.</p>
+      </div>
+    </div>
+    <div class="anim-card">
+      <div class="top" style="background:linear-gradient(135deg,#F9A8D4,#EC4899);">🖼️</div>
+      <div class="body">
+        <h4>Pixel Resolution Slider</h4>
+        <p>Switch between 4×4, 8×8, 16×16, 32×32. Watch a heart shape go from blocky pixels to sharp and smooth.</p>
+      </div>
+    </div>
+    <div class="anim-card" style="background:linear-gradient(135deg,#EEF4FF,#F0EEFF);border:2px dashed #CBD5E1;">
+      <div class="top" style="background:transparent;font-size:2.5rem;">🚧</div>
+      <div class="body">
+        <h4>More Coming Soon</h4>
+        <p>RGB colour mixer, drag-and-drop character demo, OS traffic-cop animation, HDD needle writer…</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">05 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 6 — USER FLOW
+═══════════════════════════════════ -->
+<section class="slide bg-white-section" id="slide-flow">
+  <span class="section-tag" style="background:#DCFCE7;color:#16A34A;">🗺️ User Flow</span>
+  <h2 class="slide-title">From zero to digital explorer in 60 seconds</h2>
+  <p class="slide-subtitle">
+    No account creation. No email. No password. Just three questions and you're in.
+  </p>
+
+  <div class="flow-steps">
+    <div class="flow-step" style="border-top:4px solid #1D7CFF;">
+      <span class="step-emoji">✏️</span>
+      <p>Enter Name</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #FF8A00;">
+      <span class="step-emoji">🎂</span>
+      <p>Pick Age</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #7B61FF;">
+      <span class="step-emoji">🎭</span>
+      <p>Choose Avatar</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #8BEA00;">
+      <span class="step-emoji">🚀</span>
+      <p>Explore Lessons</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #FF4081;">
+      <span class="step-emoji">🧩</span>
+      <p>Take Quizzes</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #00BCD4;">
+      <span class="step-emoji">🏅</span>
+      <p>Download Badge</p>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="border-top:4px solid #94a3b8;opacity:.6;">
+      <span class="step-emoji">🗑️</span>
+      <p>Close Browser<br/><small style="color:#94a3b8;font-weight:600;">All data gone</small></p>
+    </div>
+  </div>
+
+  <div style="margin-top:2.5rem;background:#F0FDF4;border:2px solid #BBF7D0;border-radius:1.25rem;padding:1.25rem 2rem;max-width:600px;text-align:center;">
+    <p style="font-weight:800;color:#16A34A;font-size:1rem;">
+      🔒 No backend. Data lives only in <code style="background:#DCFCE7;padding:.1rem .4rem;border-radius:.4rem;">sessionStorage</code>.
+      Close the window → everything is gone. Permanently.
+    </p>
+  </div>
+  <span class="slide-num">06 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 7 — DIGITAL BADGE
+═══════════════════════════════════ -->
+<section class="slide bg-blue-section" id="slide-badge">
+  <span class="section-tag" style="background:#F5F3FF;color:#7B61FF;">🏅 Digital Badge</span>
+  <h2 class="slide-title">A souvenir every child takes home</h2>
+  <p class="slide-subtitle">Generated 100% on the device. Never uploaded. Never stored.</p>
+
+  <!-- Mock Badge -->
+  <div style="background:#082A63;border-radius:2rem;padding:2.5rem;max-width:460px;width:100%;color:white;position:relative;overflow:hidden;box-shadow:0 24px 60px rgba(8,42,99,.4);">
+    <div style="position:absolute;top:-20px;right:-20px;font-size:160px;opacity:.05;pointer-events:none;">🤖</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+      <div>
+        <p style="color:#93C5FD;font-size:.7rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;">KidByte</p>
+        <p style="color:#60A5FA;font-size:.7rem;">Explorer Certificate</p>
+      </div>
+      <p style="color:#60A5FA;font-size:.7rem;">05 Jun 2026</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;">
+      <div style="width:64px;height:64px;background:rgba(255,138,0,.2);border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🤖</div>
+      <div>
+        <p style="font-size:1.6rem;font-weight:900;">SAM</p>
+        <p style="color:#93C5FD;font-size:.85rem;">Age: 8 · 8–10 level</p>
+        <p style="color:#60A5FA;font-size:.8rem;">3 lessons explored 🎓</p>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.08);border-radius:1rem;padding:1rem 1.25rem;margin-bottom:1rem;">
+      <p style="color:#93C5FD;font-size:.65rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.6rem;">Name in Binary</p>
+      <div style="font-family:'Fira Code',monospace;display:flex;flex-direction:column;gap:.3rem;">
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <span style="color:white;font-weight:900;width:16px;">S</span>
+          <span style="color:#94A3B8;font-size:.75rem;">→</span>
+          <span style="color:#8BEA00;font-weight:700;letter-spacing:2px;">01010011</span>
+        </div>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <span style="color:white;font-weight:900;width:16px;">A</span>
+          <span style="color:#94A3B8;font-size:.75rem;">→</span>
+          <span style="color:#8BEA00;font-weight:700;letter-spacing:2px;">01000001</span>
+        </div>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <span style="color:white;font-weight:900;width:16px;">M</span>
+          <span style="color:#94A3B8;font-size:.75rem;">→</span>
+          <span style="color:#8BEA00;font-weight:700;letter-spacing:2px;">01001101</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+      <div style="background:rgba(255,255,255,.08);border-radius:.75rem;padding:.85rem 1rem;">
+        <p style="color:#93C5FD;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;">Age in Binary</p>
+        <p style="font-family:'Fira Code',monospace;color:#8BEA00;font-weight:700;font-size:1rem;letter-spacing:2px;">00001000</p>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:.75rem;padding:.85rem 1rem;">
+        <p style="color:#93C5FD;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;">Age in Hex</p>
+        <p style="font-family:'Fira Code',monospace;color:#FF8A00;font-weight:700;font-size:1rem;">0x08</p>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:.9rem;text-align:center;">
+      <p style="color:#60A5FA;font-size:.72rem;">🔒 Generated on your device. Never stored. Never sent.</p>
+    </div>
+  </div>
+  <span class="slide-num">07 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 8 — TECH STACK
+═══════════════════════════════════ -->
+<section class="slide bg-white-section" id="slide-tech">
+  <span class="section-tag" style="background:#F1F5F9;color:#475569;">⚙️ Tech Stack</span>
+  <h2 class="slide-title">Modern, lightweight, fully static</h2>
+  <p class="slide-subtitle">Zero server costs. Deploys free on Vercel. Works offline with a PWA manifest.</p>
+
+  <div class="grid-4" style="max-width:960px;">
+    <div class="tech-pill">
+      <span class="tech-icon">▲</span>
+      <div>
+        <div class="tech-name">Next.js 16</div>
+        <div class="tech-role">App Router · SSG</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon" style="color:#3178C6;">TS</span>
+      <div>
+        <div class="tech-name">TypeScript 5</div>
+        <div class="tech-role">Full type safety</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon" style="color:#38BDF8;">🌊</span>
+      <div>
+        <div class="tech-name">Tailwind CSS 4</div>
+        <div class="tech-role">Utility styling</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon" style="color:#FF0055;">●</span>
+      <div>
+        <div class="tech-name">Framer Motion</div>
+        <div class="tech-role">All animations</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon">📄</span>
+      <div>
+        <div class="tech-name">jsPDF</div>
+        <div class="tech-role">Client PDF generation</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon">🖼️</span>
+      <div>
+        <div class="tech-name">html2canvas</div>
+        <div class="tech-role">Badge screenshot</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon">🔒</span>
+      <div>
+        <div class="tech-name">sessionStorage</div>
+        <div class="tech-role">Only data store</div>
+      </div>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-icon" style="color:#000;">▲</span>
+      <div>
+        <div class="tech-name">Vercel</div>
+        <div class="tech-role">Deploy (free tier)</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2.5rem;background:#F8FAFC;border-radius:1.25rem;padding:1.25rem 2rem;max-width:700px;text-align:center;border:2px solid #E2E8F0;">
+    <p style="font-weight:800;color:#475569;">
+      💡 No backend · No database · No API keys · No server costs
+      <br/><span style="font-weight:600;font-size:.9rem;color:#94A3B8;">Fully static export — can be hosted on any CDN including GitHub Pages</span>
+    </p>
+  </div>
+  <span class="slide-num">08 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 9 — PRIVACY
+═══════════════════════════════════ -->
+<section class="slide" id="slide-privacy">
+  <span class="section-tag" style="background:rgba(255,255,255,.15);color:white;">🔒 Privacy Promise</span>
+  <h2 class="slide-title">Built for children. Privacy is non-negotiable.</h2>
+  <p class="slide-subtitle">
+    KidByte was designed from day one with one rule: we must never know anything about the child using it.
+  </p>
+
+  <div class="grid-2" style="max-width:860px;">
+    <div class="priv-item">
+      <span class="p-icon">🚫</span>
+      <div>
+        <h4>Zero Advertisements</h4>
+        <p>No ads. No sponsored content. No affiliate links. The platform is not monetised through attention.</p>
+      </div>
+    </div>
+    <div class="priv-item">
+      <span class="p-icon">👁️‍🗨️</span>
+      <div>
+        <h4>Zero Tracking</h4>
+        <p>No Google Analytics, no Mixpanel, no Facebook pixel. Not a single tracking script loads.</p>
+      </div>
+    </div>
+    <div class="priv-item">
+      <span class="p-icon">🍪</span>
+      <div>
+        <h4>Zero Cookies</h4>
+        <p>No cookies set — not even "necessary" ones. No consent banner needed because there is nothing to consent to.</p>
+      </div>
+    </div>
+    <div class="priv-item">
+      <span class="p-icon">💾</span>
+      <div>
+        <h4>sessionStorage Only</h4>
+        <p>Name, age, avatar, progress — stored only in <code>sessionStorage</code>. Browser close = everything gone. No <code>localStorage</code>. No IndexedDB.</p>
+      </div>
+    </div>
+    <div class="priv-item">
+      <span class="p-icon">🌐</span>
+      <div>
+        <h4>No Backend Server</h4>
+        <p>There is no server to breach. No database to leak. No API endpoint that could be abused. Fully static files.</p>
+      </div>
+    </div>
+    <div class="priv-item">
+      <span class="p-icon">📥</span>
+      <div>
+        <h4>Local PDF Generation</h4>
+        <p>The digital badge PDF is generated using jsPDF entirely inside the browser. Nothing is uploaded to generate it.</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num light">09 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SLIDE 10 — ROADMAP
+═══════════════════════════════════ -->
+<section class="slide bg-light-section" id="slide-roadmap">
+  <span class="section-tag" style="background:#DBEAFE;color:#1D4ED8;">🔮 Roadmap</span>
+  <h2 class="slide-title">What's built · What's next</h2>
+  <p class="slide-subtitle">MVP is live. Two more phases planned based on community feedback.</p>
+
+  <div class="grid-3">
+    <div class="roadmap-phase" style="border-top:4px solid #8BEA00;">
+      <h3><span style="background:#8BEA00;color:#1a1a1a;padding:.2rem .7rem;border-radius:.75rem;font-size:.75rem;">v1.0 LIVE</span> MVP</h3>
+      <ul>
+        <li><span class="done">✓</span> Onboarding (name → age → avatar)</li>
+        <li><span class="done">✓</span> 5 lessons: Folder, CPU, RAM, Binary, Pixels</li>
+        <li><span class="done">✓</span> 5 interactive Framer Motion animations</li>
+        <li><span class="done">✓</span> Age-adaptive quiz engine (3 groups)</li>
+        <li><span class="done">✓</span> Digital Badge + PDF download</li>
+        <li><span class="done">✓</span> Donate page (UPI QR)</li>
+        <li><span class="done">✓</span> Parent Zone</li>
+        <li><span class="done">✓</span> Sticky header with animated logo</li>
+      </ul>
+    </div>
+    <div class="roadmap-phase" style="border-top:4px solid #1D7CFF;">
+      <h3><span style="background:#1D7CFF;color:white;padding:.2rem .7rem;border-radius:.75rem;font-size:.75rem;">Phase 2</span> Expansion</h3>
+      <ul>
+        <li><span class="todo">○</span> GPU, SSD, Motherboard lessons</li>
+        <li><span class="todo">○</span> OS vs Software lesson</li>
+        <li><span class="todo">○</span> Drag-and-drop lesson animation</li>
+        <li><span class="todo">○</span> RGB colour mixer demo</li>
+        <li><span class="todo">○</span> PWA manifest (offline support)</li>
+        <li><span class="todo">○</span> Voice narration (Web Speech API)</li>
+        <li><span class="todo">○</span> WCAG 2.1 AA accessibility pass</li>
+        <li><span class="todo">○</span> Vercel deployment</li>
+      </ul>
+    </div>
+    <div class="roadmap-phase" style="border-top:4px solid #7B61FF;">
+      <h3><span style="background:#7B61FF;color:white;padding:.2rem .7rem;border-radius:.75rem;font-size:.75rem;">Phase 3</span> Future</h3>
+      <ul>
+        <li><span class="todo">○</span> Python & Scratch intro lessons</li>
+        <li><span class="todo">○</span> Networking & Internet explained</li>
+        <li><span class="todo">○</span> AI & Machine Learning for kids</li>
+        <li><span class="todo">○</span> Mobile app (React Native)</li>
+        <li><span class="todo">○</span> Hindi, Tamil, Telugu translations</li>
+        <li><span class="todo">○</span> International donations (Stripe)</li>
+        <li><span class="todo">○</span> Teacher / school dashboard</li>
+        <li><span class="todo">○</span> Offline learning packs</li>
+      </ul>
+    </div>
+  </div>
+  <span class="slide-num">10 / 10</span>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     FINAL — CTA
+═══════════════════════════════════ -->
+<section class="slide" id="slide-final">
+  <span class="big-emoji">🤖</span>
+  <h2>Ready to explore?</h2>
+  <p>
+    KidByte is free, open-source, and built with love for every curious child.<br/>
+    No ads. No tracking. No accounts. Just learning.
+  </p>
+  <div class="cta-buttons">
+    <a href="http://localhost:3001" class="btn-primary">Open KidByte 🚀</a>
+    <a href="https://github.com/YOUR_USERNAME/kidbyte" class="btn-secondary">View on GitHub ⭐</a>
+  </div>
+  <p style="margin-top:3rem;color:rgba(255,255,255,.35);font-size:.85rem;">
+    Touch • Play • Learn • Discover
+  </p>
+</section>
+
+</body>
+</html>
