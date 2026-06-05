@@ -41,7 +41,7 @@ export default function Header() {
               transition={{ duration: 0.2 }}
             >
               <Image
-                src="/kidbyte-logo.png"
+                src="/KidByte_Logo.png"
                 alt="KidByte"
                 width={130}
                 height={52}

@@ -64,7 +64,7 @@ export default function HomePage() {
               className="drop-shadow-2xl"
             >
               <Image
-                src="/kidbyte-logo.png"
+                src="/KidByte_Logo.png"
                 alt="KidByte"
                 width={420}
                 height={220}
