@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "@/hooks/useSession";
 import { BRAND } from "@/lib/constants";
@@ -36,27 +37,32 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div
-              className="text-3xl select-none"
-              animate={{ rotate: [0, -10, 10, -5, 5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
             >
-              🤖
-            </motion.div>
-            <div className="flex flex-col leading-none">
+              <Image
+                src="/kidbyte-logo.png"
+                alt="KidByte"
+                width={130}
+                height={52}
+                className="h-10 w-auto object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+              {/* Fallback text logo */}
               <span
-                className="text-xl font-black"
+                className="text-xl font-black hidden"
+                id="logo-fallback"
                 style={{
                   background: `linear-gradient(90deg, #FF8A00, #1D7CFF, #7B61FF)`,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                {BRAND.name}
+                🤖 {BRAND.name}
               </span>
-              <span className="text-[10px] font-semibold text-gray-400 tracking-wide hidden sm:block">
-                {BRAND.tagline}
-              </span>
-            </div>
+            </motion.div>
           </Link>
 
           {/* Desktop Nav */}
