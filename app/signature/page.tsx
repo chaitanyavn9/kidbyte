@@ -74,9 +74,19 @@ export default function SignaturePage() {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="text-blue-300 text-xs font-black uppercase tracking-widest">KidByte</p>
-            <p className="text-blue-400 text-xs">Explorer Certificate</p>
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/KidByte_Logo.png"
+              alt="KidByte"
+              width={80}
+              height={54}
+              style={{ objectFit: "contain", filter: "brightness(0) invert(1)" }}
+            />
+            <div>
+              <p className="text-blue-300 text-xs font-black uppercase tracking-widest">KidByte</p>
+              <p className="text-blue-400 text-xs">Explorer Certificate</p>
+            </div>
           </div>
           <p className="text-blue-400 text-xs">{today}</p>
         </div>
