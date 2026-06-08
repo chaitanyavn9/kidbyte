@@ -82,8 +82,8 @@ export default function SignaturePage() {
         <Image
           src="/KidByte_Logo.png"
           alt="KidByte"
-          width={160}
-          height={108}
+          width={180}
+          height={120}
           style={{ objectFit: "contain" }}
           priority
         />
@@ -120,15 +120,27 @@ export default function SignaturePage() {
         </div>
 
         {/* ── Logo centred at top of badge ── */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/KidByte_Logo.png"
-            alt="KidByte"
-            width={110}
-            height={74}
-            style={{ objectFit: "contain", filter: "brightness(0) invert(1)", margin: "0 auto" }}
-          />
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+          <div
+            style={{
+              background: "white",
+              borderRadius: 16,
+              padding: "10px 24px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/KidByte_Logo.png"
+              alt="KidByte"
+              width={140}
+              height={94}
+              style={{ objectFit: "contain", display: "block" }}
+            />
+          </div>
         </div>
 
         {/* ── Badge sub-header ── */}
