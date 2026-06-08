@@ -119,8 +119,8 @@ export default function SignaturePage() {
           🤖
         </div>
 
-        {/* ── Logo centred at top of badge ── */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+        {/* ── Logo + title centred at top of badge ── */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24, gap: 14 }}>
           <div
             style={{
               background: "white",
@@ -141,6 +141,9 @@ export default function SignaturePage() {
               style={{ objectFit: "contain", display: "block" }}
             />
           </div>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: 900, color: "white", letterSpacing: -0.5 }}>
+            Your Digital Badge 🏅
+          </p>
         </div>
 
         {/* ── Badge sub-header ── */}
