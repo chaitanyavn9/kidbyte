@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function DonatePage() {
@@ -21,19 +22,21 @@ export default function DonatePage() {
             <h2 className="text-2xl font-black text-[#082A63]">India — UPI Payment</h2>
           </div>
 
-          {/* QR Code placeholder */}
-          <div className="bg-gray-50 rounded-2xl p-8 mx-auto w-48 h-48 flex items-center justify-center border-2 border-dashed border-orange-200 mb-4">
-            <div className="text-center">
-              <p className="text-4xl mb-2">📱</p>
-              <p className="text-xs font-bold text-gray-400">UPI QR Code</p>
-              <p className="text-[10px] text-gray-400">(Add your QR here)</p>
-            </div>
+          {/* QR Code */}
+          <div className="bg-white rounded-2xl p-3 mx-auto w-60 border-2 border-orange-100 shadow-md mb-4">
+            <Image
+              src="/donate/upi-qr.png"
+              alt="UPI QR code — VANKAYALA NARASIMHA CHAITANYA"
+              width={583}
+              height={675}
+              className="w-full h-auto"
+            />
           </div>
 
-          <p className="text-sm text-gray-500 mb-2">
-            Scan with any UPI app — GPay, PhonePe, Paytm, BHIM
+          <p className="font-black text-[#082A63] mb-1">VANKAYALA NARASIMHA CHAITANYA</p>
+          <p className="text-sm text-gray-500">
+            Scan with any UPI app — GPay, PhonePe, Paytm, BHIM — and pay any amount
           </p>
-          <p className="font-black text-orange-600 text-lg">upi://pay?pa=YOUR_UPI_ID@bank</p>
         </div>
 
         {/* International */}
