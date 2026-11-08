@@ -39,6 +39,7 @@ export default function Footer() {
             <Link href="/explore" className="hover:text-blue-300 transition-colors">🚀 Lessons</Link>
             <Link href="/quiz" className="hover:text-blue-300 transition-colors">🧩 Quiz</Link>
             <Link href="/signature" className="hover:text-blue-300 transition-colors">🏅 My Digital Badge</Link>
+            <Link href="/printables" className="hover:text-blue-300 transition-colors">🖨️ Free Printables</Link>
             <Link href="/parent-zone" className="hover:text-blue-300 transition-colors">👨‍👩‍👧 Parent Zone</Link>
           </div>
         </div>

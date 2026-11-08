@@ -12,6 +12,8 @@ const lesson: Lesson = {
       "RAM stands for Random Access Memory. It's super-fast temporary storage where your computer keeps everything it's currently working on — open apps, web pages, your game level. More RAM means you can have more things open at once. When you restart your computer, RAM is completely wiped clean.",
     "11-14":
       "RAM is volatile memory — it loses all data when power is cut. It's the CPU's working area: when a program runs, its code and data are loaded from storage (SSD/HDD) into RAM for fast access. RAM speed is measured in MHz/MT/s and size in GB. More RAM means larger working sets and fewer slow disk reads (thrashing).",
+    "15-18":
+      "DRAM (Dynamic RAM) stores each bit as a charge in a tiny capacitor — 1T1C cell (one transistor, one capacitor). Because capacitors leak, DRAM needs periodic refresh cycles (every 64ms, all rows refreshed). Key evolution: DDR (Double Data Rate) transfers data on both rising and falling clock edges, doubling bandwidth. DDR4 (2133–3600 MT/s, 1.2V) → DDR5 (4800–8400 MT/s, 1.1V, on-die ECC, two 32-bit subchannels). Latency expressed as CL-tRCD-tRP-tRAS (e.g. CL16-18-18-36): CL (CAS Latency) is the most visible — lower is faster. LPDDR (Low Power DDR) is soldered to mobile motherboards (phones, laptops). GDDR6/GDDR6X is wide-bus DRAM for GPUs (256-bit to 384-bit bus). The memory controller (inside modern CPUs) handles row/column addressing, refresh, and ECC for server-grade modules (RDIMM with registered buffer).",
   },
   analogy: {
     "5-7":
@@ -20,6 +22,8 @@ const lesson: Lesson = {
       "A whiteboard in class — you write on it while teaching, erase it after. Fast to use, gone when wiped.",
     "11-14":
       "The CPU's working register extended — a fast volatile buffer between persistent storage and the processor.",
+    "15-18":
+      "RAM is like a leaky whiteboard — it needs an eraser-and-rewrite every few milliseconds (refresh) just to keep data alive, but it's so fast that this overhead is worth it compared to the alternative of going to storage.",
   },
   funFact:
     "The first RAM chip was invented in 1966. Today, a modern computer has up to 192GB of RAM — enough to store 40 million pages of text!",
@@ -92,6 +96,30 @@ const lesson: Lesson = {
       correct: 0,
       explanation:
         "Thrashing occurs when a system spends more time swapping pages than actually executing processes — a severe performance bottleneck.",
+    },
+    {
+      for: "15-18",
+      question: "Why does DRAM need periodic 'refresh' cycles?",
+      choices: [
+        "Capacitors in DRAM cells leak charge over time, so rows must be rewritten every ~64ms to prevent data loss",
+        "To update the operating system",
+        "To synchronise with the CPU clock",
+      ],
+      correct: 0,
+      explanation:
+        "DRAM's 1T1C (transistor-capacitor) cells lose charge in milliseconds. The memory controller must refresh all rows within the retention time window, consuming bandwidth in the process.",
+    },
+    {
+      for: "15-18",
+      question: "What does 'CAS Latency (CL)' measure in DRAM timings?",
+      choices: [
+        "The delay (in clock cycles) between the memory controller requesting a column and the data being available",
+        "The total capacity of the RAM module",
+        "The number of memory channels",
+      ],
+      correct: 0,
+      explanation:
+        "CAS Latency is the most critical DDR timing: CL16 at 3200 MT/s = 10ns access latency. Lower CL with higher speed = better responsiveness for latency-sensitive workloads.",
     },
   ],
 };

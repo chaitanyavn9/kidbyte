@@ -36,6 +36,14 @@ const LESSON_THEMES: Record<string, { from: string; to: string; mid: string; flo
   "what-is-code":     { from: "#EEF2FF", to: "#E0E7FF", mid: "#A5B4FC", floaters: ["👩‍💻","💻","⌨️","🐛","✅"] },
   "python-intro":     { from: "#FFFBEB", to: "#FEF3C7", mid: "#FDE68A", floaters: ["🐍","💻","⌨️","🎯","✅"] },
   "scratch-intro":    { from: "#FFF1F2", to: "#FFE4E6", mid: "#FCA5A5", floaters: ["🧱","🎮","🎨","🤖","✨"] },
+  "pc-hardware":      { from: "#F5F3FF", to: "#EDE9FE", mid: "#C4B5FD", floaters: ["🖥️","⚙️","🔧","🔩","💡"] },
+  "internet-www":     { from: "#EFF6FF", to: "#DBEAFE", mid: "#60A5FA", floaters: ["🌐","📡","🔗","📶","🌍"] },
+  "cyber-hygiene":    { from: "#F0FDF4", to: "#DCFCE7", mid: "#6EE7B7", floaters: ["🛡️","🔒","🦠","🔑","✅"] },
+  "word-processing":  { from: "#FFFBEB", to: "#FEF3C7", mid: "#FDE68A", floaters: ["📝","📄","✏️","📖","🖊️"] },
+  "spreadsheets":     { from: "#ECFDF5", to: "#D1FAE5", mid: "#34D399", floaters: ["📊","📈","🔢","📉","💹"] },
+  "presentations":    { from: "#FFF1F2", to: "#FFE4E6", mid: "#F9A8D4", floaters: ["🎯","📊","🎤","✨","🖥️"] },
+  "linux-os":         { from: "#1a1a2e10", to: "#16213e10", mid: "#0f3460", floaters: ["🐧","💻","⌨️","🔧","🐚"] },
+  "dual-boot":        { from: "#EEF2FF", to: "#E0E7FF", mid: "#818CF8", floaters: ["⚙️","🪟","🐧","🔄","💿"] },
 };
 
 const DEFAULT_THEME = { from: "#EEF4FF", to: "#F0EEFF", mid: "#7B61FF", floaters: ["✨","⭐","💡","🚀","🎉"] };
@@ -52,8 +60,11 @@ interface Props {
 export default function StoryViewer({ lesson, ageGroup, onContinue }: Props) {
   const theme = LESSON_THEMES[lesson.id] ?? DEFAULT_THEME;
 
+  /* Fall back to "11-14" if "15-18" content doesn't exist for this lesson */
+  const storyText = lesson.story[ageGroup] ?? lesson.story["11-14"] ?? lesson.story["8-10"] ?? "";
+
   /* Split story into sentences */
-  const sentences = lesson.story[ageGroup]
+  const sentences = storyText
     .replace(/([.!?])\s+/g, "$1||")
     .split("||")
     .map(s => s.trim())
@@ -250,7 +261,7 @@ export default function StoryViewer({ lesson, ageGroup, onContinue }: Props) {
               style={{ borderColor: theme.mid }}
             >
               <p className="text-lg font-bold text-gray-700 italic leading-relaxed">
-                &ldquo;{lesson.analogy[ageGroup]}&rdquo;
+                &ldquo;{lesson.analogy[ageGroup] ?? lesson.analogy["11-14"] ?? lesson.analogy["8-10"] ?? ""}&rdquo;
               </p>
             </div>
             {lesson.funFact && (

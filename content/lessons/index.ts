@@ -30,6 +30,14 @@ import memoryAlloc from "./memory-allocation";
 import whatIsCode from "./what-is-code";
 import pythonIntro from "./python-intro";
 import scratchIntro from "./scratch-intro";
+import pcHardware from "./pc-hardware";
+import internetWww from "./internet-www";
+import cyberHygiene from "./cyber-hygiene";
+import wordProcessing from "./word-processing";
+import spreadsheets from "./spreadsheets";
+import presentations from "./presentations";
+import linuxOs from "./linux-os";
+import dualBoot from "./dual-boot";
 
 const lessons: Record<string, Lesson> = {
   folder, cpu, ram, binary, pixels,
@@ -40,6 +48,9 @@ const lessons: Record<string, Lesson> = {
   rgb, "hex-colors": hexColors, resolution,
   "hard-disk": hardDisk, "ssd-deep": ssdDeep, "memory-allocation": memoryAlloc,
   "what-is-code": whatIsCode, "python-intro": pythonIntro, "scratch-intro": scratchIntro,
+  "pc-hardware": pcHardware, "internet-www": internetWww, "cyber-hygiene": cyberHygiene,
+  "word-processing": wordProcessing, spreadsheets, presentations,
+  "linux-os": linuxOs, "dual-boot": dualBoot,
 };
 
 export default lessons;

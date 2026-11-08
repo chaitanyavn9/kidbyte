@@ -11,6 +11,7 @@ import RamAnimation from "@/components/animations/RamAnimation";
 import BinaryAnimation from "@/components/animations/BinaryAnimation";
 import PixelAnimation from "@/components/animations/PixelAnimation";
 import DeviceAnimation from "@/components/animations/DeviceAnimation";
+import PCComponentAnimation from "@/components/animations/PCComponentAnimation";
 
 /* ── Page-level background gradients per lesson ── */
 const PAGE_BG: Record<string, string> = {
@@ -45,6 +46,14 @@ const PAGE_BG: Record<string, string> = {
   "what-is-code":     "from-indigo-50 via-blue-50 to-violet-50",
   "python-intro":     "from-yellow-50 via-blue-50 to-indigo-50",
   "scratch-intro":    "from-rose-50 via-orange-50 to-amber-50",
+  "pc-hardware":      "from-purple-50 via-violet-50 to-indigo-50",
+  "internet-www":     "from-blue-50 via-sky-50 to-indigo-50",
+  "cyber-hygiene":    "from-emerald-50 via-green-50 to-teal-50",
+  "word-processing":  "from-amber-50 via-yellow-50 to-orange-50",
+  "spreadsheets":     "from-green-50 via-emerald-50 to-teal-50",
+  "presentations":    "from-pink-50 via-rose-50 to-fuchsia-50",
+  "linux-os":         "from-gray-50 via-slate-50 to-zinc-50",
+  "dual-boot":        "from-indigo-50 via-violet-50 to-purple-50",
 };
 
 /* ── Accent colours for tab highlight per lesson ── */
@@ -58,11 +67,20 @@ const ACCENT: Record<string, string> = {
   "hex-colors":"#BE185D", resolution:"#1E40AF", "hard-disk":"#475569",
   "ssd-deep":"#0F766E", "memory-allocation":"#B45309", "what-is-code":"#4F46E5",
   "python-intro":"#2563EB", "scratch-intro":"#FF6B35",
+  "pc-hardware":"#7C3AED", "internet-www":"#1D4ED8", "cyber-hygiene":"#047857",
+  "word-processing":"#B45309", "spreadsheets":"#15803D", "presentations":"#BE185D",
+  "linux-os":"#374151", "dual-boot":"#4338CA",
 };
 
 function DeviceAnimationWrapper({ lessonId }: { lessonId: string }) {
   return <DeviceAnimation lessonId={lessonId} />;
 }
+
+/* PC parts that get the engineering open-PC animation */
+const PC_PARTS_LESSONS = new Set([
+  "cpu", "motherboard", "ram", "gpu", "ssd", "hard-disk", "ssd-deep", "cooling-fan", "battery", "rom",
+  "pc-hardware",
+]);
 
 const ANIMATION_MAP: Record<string, React.ComponentType> = {
   folder: FolderAnimation, cpu: CpuAnimation, ram: RamAnimation,
@@ -82,6 +100,8 @@ export default function LessonPage({ lesson }: Props) {
   const [tab, setTab] = useState<Tab>("story");
 
   const ageGroup: AgeGroup = session?.ageGroup ?? "8-10";
+  const isEngineeringMode = ageGroup === "15-18";
+  const showPCAnimation = isEngineeringMode && PC_PARTS_LESSONS.has(lesson.id);
   const AnimComp = ANIMATION_MAP[lesson.id];
   const pageBg = PAGE_BG[lesson.id] ?? "from-blue-50 via-indigo-50 to-purple-50";
   const accent = ACCENT[lesson.id] ?? "#1D7CFF";
@@ -198,9 +218,26 @@ export default function LessonPage({ lesson }: Props) {
               transition={{ duration: 0.25 }}
               className="flex flex-col gap-5"
             >
+              {/* Engineering mode badge */}
+              {isEngineeringMode && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl px-4 py-2.5 flex items-center gap-2"
+                >
+                  <span className="text-xl">🎓</span>
+                  <div>
+                    <p className="text-white font-black text-sm">Engineering Mode</p>
+                    <p className="text-purple-200 text-xs">1st Year CSE depth — full technical explanation</p>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Interactive animation panel */}
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-white overflow-hidden">
-                {AnimComp ? (
+                {showPCAnimation ? (
+                  <PCComponentAnimation lessonId={lesson.id} />
+                ) : AnimComp ? (
                   <AnimComp />
                 ) : (
                   <div className="p-14 text-center">

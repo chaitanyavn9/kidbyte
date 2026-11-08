@@ -1,4 +1,4 @@
-export type AgeGroup = "5-7" | "8-10" | "11-14";
+export type AgeGroup = "5-7" | "8-10" | "11-14" | "15-18";
 
 export interface KidByteSession {
   name: string;
@@ -23,8 +23,8 @@ export interface Lesson {
   title: string;
   emoji: string;
   category: string;
-  story: Record<AgeGroup, string>;
-  analogy: Record<AgeGroup, string>;
+  story: Partial<Record<AgeGroup, string>>;
+  analogy: Partial<Record<AgeGroup, string>>;
   funFact?: string;
   dos?: string[];
   donts?: string[];

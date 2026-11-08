@@ -107,7 +107,7 @@ export default function Onboarding() {
                 <p className="text-gray-500 mt-1">This helps us show the right lessons for you</p>
               </div>
               <div className="flex justify-center gap-3 flex-wrap">
-                {[5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((n) => (
+                {[5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => (
                   <motion.button
                     key={n}
                     whileHover={{ scale: 1.1 }}
@@ -115,14 +115,29 @@ export default function Onboarding() {
                     onClick={() => setAge(n)}
                     className={`w-12 h-12 rounded-2xl font-black text-lg transition-all ${
                       age === n
-                        ? "bg-blue-500 text-white shadow-lg shadow-blue-200 scale-110"
-                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                        ? n >= 15
+                          ? "bg-purple-600 text-white shadow-lg shadow-purple-200 scale-110"
+                          : "bg-blue-500 text-white shadow-lg shadow-blue-200 scale-110"
+                        : n >= 15
+                          ? "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                          : "bg-blue-50 text-blue-700 hover:bg-blue-100"
                     }`}
                   >
                     {n}
                   </motion.button>
                 ))}
               </div>
+              {Number(age) >= 15 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center px-4 py-3 rounded-2xl bg-purple-50 border-2 border-purple-200"
+                >
+                  <span className="text-2xl">🎓</span>
+                  <p className="text-purple-700 font-black text-sm mt-1">Engineering Mode Unlocked!</p>
+                  <p className="text-purple-500 text-xs">You&apos;ll get in-depth 1st Year CSE content alongside all topics.</p>
+                </motion.div>
+              )}
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep("name")}
