@@ -1,0 +1,1054 @@
+<title>Inside the CPU — Registers, RAM & SSD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap">
+
+<style>
+/* ── KidByte color tokens ── */
+:root {
+  --bg:        #F8FBFF;
+  --bg2:       #FFFFFF;
+  --bg3:       #EEF4FF;
+  --border:    #DBEAFE;
+  --fg:        #082A63;
+  --fg2:       #2D4B8E;
+  --fg3:       #6B8EC8;
+  --cyan:      #1D7CFF;
+  --cyan-dim:  #EEF4FF;
+  --amber:     #FF8A00;
+  --amber-dim: #FFF3E0;
+  --green:     #22C55E;
+  --red:       #EF4444;
+  --purple:    #7B61FF;
+  --ff-on:     #1D7CFF;
+  --ff-off:    #EEF4FF;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left,0px));
+  padding-right: max(16px, env(safe-area-inset-right,0px));
+  padding-block: 0 32px;
+}
+
+/* ── Top nav ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 2px solid var(--border);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block: 0;
+  box-shadow: 0 2px 12px rgba(29,124,255,.08);
+}
+.topbar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: var(--fg3);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--cyan); }
+.tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+/* ── Sections ── */
+.section { display: none; max-width: 820px; margin: 0 auto; padding-top: 32px; }
+.section.active { display: block; }
+
+h1 { font-size: clamp(1.4rem,4vw,2rem); font-weight: 900; line-height: 1.2; text-wrap: balance; color: var(--fg); }
+h2 { font-size: 1.1rem; font-weight: 800; color: var(--cyan); font-family: 'Nunito',sans-serif; letter-spacing:.01em; margin-bottom: 10px; }
+h3 { font-size: .9rem; font-weight: 800; color: var(--amber); margin-bottom: 6px; }
+p { color: var(--fg2); margin-bottom: 12px; }
+p strong { color: var(--fg); }
+.hero-label { font-family: 'Nunito',sans-serif; font-size: 11px; color: var(--cyan); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; font-weight:800; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(29,124,255,.06); }
+.card-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.card-row > * { flex: 1 1 240px; min-width: 0; }
+
+/* ── Flip-flop canvas ── */
+.ff-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+.ff-bit {
+  width: 36px; height: 36px; border-radius: 6px;
+  font-family: 'JetBrains Mono',monospace; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .1s;
+  user-select: none;
+}
+.ff-bit[data-v="1"] { background: var(--cyan); color: #fff; border-color: var(--cyan); box-shadow: 0 2px 8px rgba(29,124,255,.3); }
+.ff-bit[data-v="0"] { background: var(--ff-off); color: var(--fg3); border-color: var(--border); }
+.ff-bit:hover { transform: scale(1.1); }
+.ff-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--fg3); text-align:center; margin-top:3px; }
+.ff-cell { display:flex; flex-direction:column; align-items:center; }
+
+/* ── Register row ── */
+.reg-container { overflow-x: auto; }
+.reg-row { display: flex; gap: 3px; padding: 8px 0; min-width: max-content; }
+.reg-seg { display: flex; flex-direction:column; align-items:center; }
+.reg-seg-bits { display: flex; gap: 2px; }
+.reg-seg-label { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--fg3); margin-top:4px; }
+.reg-bit {
+  width: 20px; height: 20px; border-radius: 3px;
+  font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+  border: 1px solid;
+  transition: background .12s;
+}
+.reg-bit.on  { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+.reg-bit.off { background: var(--ff-off); color: var(--fg3); border-color: var(--border); }
+.reg-bit.seg-al  { background: rgba(251,191,36,.2); border-color: var(--amber); color: var(--amber); }
+.reg-bit.seg-al.on { background: var(--amber); color: var(--bg); }
+.reg-bit.seg-ah  { background: rgba(167,139,250,.2); border-color: var(--purple); color: var(--purple); }
+.reg-bit.seg-ah.on { background: var(--purple); color: var(--bg); }
+
+/* ── x86 evolution ── */
+.evo-wrap { display:flex; flex-direction:column; gap:12px; }
+.evo-reg { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.evo-name { font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; min-width:48px; }
+.evo-bar { height: 32px; border-radius:50px; display:flex; align-items:center; padding-left:14px;
+  font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
+  position:relative; overflow:hidden; white-space:nowrap; }
+.evo-era { font-size:11px; color:var(--fg3); margin-left:auto; padding-right:12px; white-space:nowrap; font-weight:600; }
+
+/* ── RAM cells (DRAM vs SRAM) ── */
+.memory-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(28px,1fr)); gap:4px; margin:12px 0; }
+.dram-cell {
+  aspect-ratio:1; border-radius:4px;
+  font-size:9px; font-family:'JetBrains Mono',monospace;
+  display:flex; align-items:center; justify-content:center; font-weight:600;
+  border: 1px solid;
+  transition: background .2s, border-color .2s;
+}
+.dram-cell.c1 { background: rgba(29,124,255,.14); border-color:var(--cyan); color:var(--cyan); }
+.dram-cell.c0 { background: var(--ff-off); border-color:var(--border); color:var(--fg3); }
+.dram-cell.leak { background: rgba(239,68,68,.12); border-color:var(--red); color:var(--red); }
+
+/* ── SSD flash cell diagram ── */
+.flash-cell-wrap { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin:16px 0; }
+.flash-cell {
+  width: 110px; display:flex; flex-direction:column; align-items:center; gap:6px;
+  background:var(--bg3); border-radius:14px; border:2px solid var(--border); padding:12px 8px;
+  box-shadow: 0 2px 8px rgba(29,124,255,.06);
+}
+.flash-cell-title { font-family:'Nunito',sans-serif; font-size:11px; color:var(--amber); font-weight:900; }
+.gate-diagram { width:80px; height:70px; }
+.charge-bar-wrap { width:100%; }
+.charge-label { font-size:10px; color:var(--fg3); text-align:center; margin-bottom:3px; }
+.charge-bar { height:10px; border-radius:4px; background:var(--border); overflow:hidden; }
+.charge-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--amber),var(--red)); transition:width .4s; }
+.flash-bits { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg); font-weight:700; margin-top:4px; }
+
+/* ── Hierarchy comparison ── */
+.hier { display:flex; flex-direction:column; gap:8px; }
+.hier-row { display:flex; align-items:center; gap:12px; }
+.hier-box {
+  flex:1; border-radius:8px; padding:10px 14px; min-width:0;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600;
+}
+.hier-speed { font-size:10px; font-weight:400; opacity:.7; }
+.hier-size  { font-size:10px; font-weight:400; }
+
+/* ── Bit display ── */
+#decimal-out { font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:700; color:var(--cyan); }
+#hex-out     { font-family:'JetBrains Mono',monospace; font-size:1.1rem; color:var(--amber); }
+
+/* ── KidByte extra polish ── */
+table { border-radius: 12px; overflow: hidden; }
+th { font-family:'Nunito',sans-serif; }
+td { font-family:'Nunito',sans-serif; }
+.hier-box { border-radius: 50px !important; }
+
+
+/* ── Control buttons ── */
+.btn {
+  padding: 8px 18px; border-radius: 50px; border: 2px solid var(--border);
+  background: var(--bg3); color: var(--fg2); font-size: 13px; font-weight: 800;
+  cursor: pointer; transition: all .15s;
+  font-family: 'Nunito', sans-serif;
+}
+.btn:hover { background: var(--border); border-color: var(--cyan); color: var(--cyan); }
+.btn.primary { background: var(--cyan); border-color: var(--cyan); color: #fff; }
+.btn.primary:hover { background: #1568e0; border-color: #1568e0; }
+.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+
+/* ── Annotation ── */
+.note {
+  font-size:13px; color:var(--fg2); border-left:3px solid var(--cyan);
+  background: var(--cyan-dim); border-radius: 0 10px 10px 0;
+  padding: 10px 14px; margin:12px 0; line-height:1.5;
+}
+.note strong { color:var(--fg); }
+.tag {
+  display:inline-block; padding:3px 10px; border-radius:50px;
+  font-family:'Nunito',sans-serif; font-size:11px; font-weight:800;
+}
+.tag-cyan   { background:rgba(29,124,255,.12);  color:var(--cyan); }
+.tag-amber  { background:rgba(255,138,0,.12);   color:var(--amber); }
+.tag-green  { background:rgba(34,197,94,.12);   color:var(--green); }
+.tag-red    { background:rgba(239,68,68,.12);   color:var(--red); }
+.tag-purple { background:rgba(123,97,255,.12);  color:var(--purple); }
+
+/* ── Leak animation ── */
+@keyframes leak-pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+.leaking { animation: leak-pulse 1.2s infinite; }
+
+/* ── Bit flip animation ── */
+@keyframes bit-pop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
+.bit-pop { animation: bit-pop .2s ease-out; }
+
+.sep { height:1px; background:var(--border); margin:24px 0; }
+</style>
+
+<div class="topbar">
+  <button class="tab-btn active" data-tab="ff">① Flip-Flop</button>
+  <button class="tab-btn" data-tab="reg">② Register</button>
+  <button class="tab-btn" data-tab="x86">③ x86-64</button>
+  <button class="tab-btn" data-tab="ram">④ RAM</button>
+  <button class="tab-btn" data-tab="ssd">⑤ SSD</button>
+  <button class="tab-btn" data-tab="hier">⑥ The Ladder</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — FLIP-FLOP
+══════════════════════════════════════════ -->
+<section class="section active" id="tab-ff">
+  <div class="hero-label">01 — The Atom of Memory</div>
+  <h1>What is a Flip-Flop?</h1>
+  <p style="margin-top:10px;">A flip-flop is the <strong>smallest memory circuit</strong> that exists. It stores exactly <strong>one bit</strong> — a 0 or a 1 — and holds that value until you deliberately change it.</p>
+
+  <div class="card">
+    <h2>🔵 One Flip-Flop = One Bit</h2>
+    <p>Click the cell below to flip it between 0 and 1. That is <em>literally</em> what a flip-flop does inside a CPU — it switches state and holds it:</p>
+
+    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+      <div>
+        <div class="ff-row" id="single-ff">
+          <div class="ff-cell">
+            <div class="ff-bit" data-v="0" id="ff-single" onclick="flipSingle()">0</div>
+            <div class="ff-label">D FF</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="flipSingle()">⚡ Toggle (Clock Edge)</button>
+        </div>
+      </div>
+
+      <div style="flex:1; min-width:200px;">
+        <svg viewBox="0 0 200 90" width="100%" style="max-width:280px; display:block;">
+          <!-- D Flip-Flop schematic -->
+          <rect x="60" y="20" width="80" height="50" rx="6" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+          <text x="100" y="43" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="var(--fg2)">D</text>
+          <text x="100" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--fg3)">Flip-Flop</text>
+          <!-- D input -->
+          <line x1="10" y1="40" x2="60" y2="40" stroke="var(--cyan)" stroke-width="1.5"/>
+          <text x="5" y="43" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">D</text>
+          <!-- Clock input -->
+          <line x1="40" y1="80" x2="80" y2="80" stroke="var(--amber)" stroke-width="1.5"/>
+          <line x1="80" y1="80" x2="80" y2="70" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="5" y="83" font-family="JetBrains Mono" font-size="9" fill="var(--amber)">CLK</text>
+          <!-- Q output -->
+          <line x1="140" y1="38" x2="195" y2="38" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="148" y="33" font-family="JetBrains Mono" font-size="9" fill="var(--green)">Q</text>
+          <!-- Value bubble -->
+          <circle cx="185" cy="38" r="10" fill="none" stroke="var(--green)" stroke-width="1.5" id="ff-bubble"/>
+          <text x="185" y="42" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="var(--green)" id="ff-bubble-text">0</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>How it works:</strong> A D flip-flop captures the value at its input (D) <em>on the rising edge of the clock</em>. Between clock edges, the output (Q) holds its value unchanged — that's the memory. The CPU's clock runs at billions of edges per second, but each flip-flop only updates when explicitly told to.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧱 Why "Flip-Flop"?</h2>
+    <p>The name comes from its behavior: it <strong>flips</strong> to 1, and can <strong>flop</strong> back to 0. The first flip-flop circuits were built in 1918 with vacuum tubes — the same fundamental idea inside every modern CPU register today, just 10,000× smaller.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;">
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <h3>State = 0 (OFF)</h3>
+        <p style="font-size:13px;">No charge stored. Output is LOW. Represents binary <span class="tag tag-amber">0</span></p>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <h3 style="color:var(--cyan);">State = 1 (ON)</h3>
+        <p style="font-size:13px;">Charge stored. Output is HIGH. Represents binary <span class="tag tag-cyan">1</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚡ SRAM — 6 Transistors per Bit</h2>
+    <p>An SRAM cell (like in CPU cache) uses <strong>6 transistors</strong> to build one flip-flop — 4 forming a cross-coupled inverter latch, 2 for access control. This is why SRAM is fast but physically large.</p>
+    <svg viewBox="0 0 320 80" width="100%" style="max-width:420px; display:block; margin:8px auto;">
+      <!-- 6 transistor symbols abstracted -->
+      <g id="sram-diagram">
+        <!-- Cross couple inverters -->
+        <rect x="40" y="20" width="40" height="40" rx="4" fill="rgba(34,211,238,.08)" stroke="var(--cyan)" stroke-width="1"/>
+        <text x="60" y="38" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--cyan)">INV</text>
+        <text x="60" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">T1+T2</text>
+
+        <rect x="120" y="20" width="40" height="40" rx="4" fill="rgba(34,211,238,.08)" stroke="var(--cyan)" stroke-width="1"/>
+        <text x="140" y="38" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--cyan)">INV</text>
+        <text x="140" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">T3+T4</text>
+
+        <!-- Cross coupling wires -->
+        <path d="M80 32 Q100 15 120 32" stroke="var(--fg3)" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
+        <path d="M80 48 Q100 65 120 48" stroke="var(--fg3)" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
+
+        <!-- Access transistors -->
+        <rect x="20" y="30" width="20" height="20" rx="3" fill="rgba(251,191,36,.1)" stroke="var(--amber)" stroke-width="1"/>
+        <text x="30" y="43" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--amber)">T5</text>
+        <rect x="160" y="30" width="20" height="20" rx="3" fill="rgba(251,191,36,.1)" stroke="var(--amber)" stroke-width="1"/>
+        <text x="170" y="43" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--amber)">T6</text>
+
+        <!-- BL lines -->
+        <line x1="10" y1="10" x2="10" y2="70" stroke="var(--green)" stroke-width="1"/>
+        <line x1="10" y1="40" x2="20" y2="40" stroke="var(--green)" stroke-width="1"/>
+        <text x="2" y="8" font-family="JetBrains Mono" font-size="7" fill="var(--green)">BL</text>
+
+        <line x1="190" y1="10" x2="190" y2="70" stroke="var(--green)" stroke-width="1"/>
+        <line x1="180" y1="40" x2="190" y2="40" stroke="var(--green)" stroke-width="1"/>
+        <text x="192" y="8" font-family="JetBrains Mono" font-size="7" fill="var(--green)">BL̄</text>
+
+        <!-- WL -->
+        <line x1="10" y1="40" x2="20" y2="40" stroke="var(--purple)" stroke-width="0"/>
+        <line x1="10" y1="25" x2="200" y2="25" stroke="var(--purple)" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="205" y="28" font-family="JetBrains Mono" font-size="7" fill="var(--purple)">WL (Word Line)</text>
+
+        <!-- Label -->
+        <text x="90" y="78" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--fg3)">1 SRAM bit = 6 transistors</text>
+      </g>
+    </svg>
+    <div class="note">
+      <strong>Speed:</strong> SRAM reads in ~1–5 ns (CPU L1 cache). No refresh needed — holds state as long as powered. <strong>Cost:</strong> ~6× area of DRAM. That's why L1 cache is only 32–128 KB, not GBs.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — REGISTER
+══════════════════════════════════════════ -->
+<section class="section" id="tab-reg">
+  <div class="hero-label">02 — Grouping Bits Together</div>
+  <h1>What is a Register?</h1>
+  <p style="margin-top:10px;">A register is <strong>N flip-flops wired side-by-side</strong>, sharing a common clock and control. Together they store N bits as one number. Click individual bits below to build a value:</p>
+
+  <div class="card">
+    <h2>🔢 8-Bit Register (1 Byte)</h2>
+    <p>8 flip-flops = 1 byte. Click any bit to toggle it:</p>
+    <div class="reg-container">
+      <div class="reg-row" id="reg8-row"></div>
+    </div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap; margin:12px 0; align-items:center;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3);">Decimal</div>
+        <div id="reg8-dec" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:700; color:var(--cyan);">0</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3);">Hex</div>
+        <div id="reg8-hex" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--amber);">0x00</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3);">ASCII</div>
+        <div id="reg8-ascii" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--green);">·</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="setReg8(65)">Set 'A' (65)</button>
+      <button class="btn" onclick="setReg8(255)">Set 255</button>
+      <button class="btn" onclick="setReg8(0)">Clear</button>
+      <button class="btn" onclick="setReg8(Math.floor(Math.random()*256))">Random</button>
+    </div>
+    <div class="note"><strong>Bit 7</strong> (leftmost) is the Most Significant Bit — it has weight 128. <strong>Bit 0</strong> (rightmost) is the Least Significant Bit — it has weight 1.</div>
+  </div>
+
+  <div class="card">
+    <h2>🧠 RAX — The 64-Bit Register</h2>
+    <p>The RAX register in an x86-64 CPU is 64 flip-flops in a row. Each bit position represents a power of 2. The total range: <strong>0 to 18,446,744,073,709,551,615</strong> (~18 quintillion).</p>
+    <div class="reg-container">
+      <div id="reg64-row" style="display:flex; gap:2px; padding:8px 0; min-width:max-content;"></div>
+    </div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap; margin:12px 0; align-items:center;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3);">Decimal (truncated)</div>
+        <div id="reg64-dec" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--cyan);">0</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3);">Hex</div>
+        <div id="reg64-hex" style="font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--amber);">0x0000000000000000</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="setReg64(0x48454C4C4Fn)">Set "HELLO"</button>
+      <button class="btn" onclick="setReg64(0xDEADBEEFn)">0xDEADBEEF</button>
+      <button class="btn" onclick="setReg64(0n)">Clear</button>
+      <button class="btn" onclick="randomReg64()">Random</button>
+    </div>
+    <div class="note"><strong>A CPU may have 16–32 such registers.</strong> These are the fastest storage in the entire computer — zero latency, directly connected to the ALU (calculator). Operations like addition literally happen <em>inside</em> these flip-flop arrays in a single clock cycle.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — x86 / x64
+══════════════════════════════════════════ -->
+<section class="section" id="tab-x86">
+  <div class="hero-label">03 — The 50-Year Register Evolution</div>
+  <h1>What does "64-bit x86-64" mean?</h1>
+  <p style="margin-top:10px;">The <strong>bit-width</strong> of a processor describes how many bits each general-purpose register holds — and therefore the largest number it can process natively in one instruction. It has evolved three times.</p>
+
+  <div class="card">
+    <h2>📐 The RAX Evolution</h2>
+    <p>The same register has grown with each CPU generation. The names from each era still work today as <em>aliases</em> into the same register:</p>
+
+    <div class="evo-wrap" id="evo-wrap"></div>
+    <div class="note" style="margin-top:16px;">
+      <strong>Backward compatibility:</strong> When you write to EAX (32-bit), the top 32 bits of RAX are <em>automatically zero-extended</em>. When you write to AX (16-bit), only those 16 bits change — upper bits are preserved. This design meant old software ran unchanged on each new CPU generation.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗂️ The x86-64 Register File</h2>
+    <p>An x86-64 CPU has <strong>16 general-purpose 64-bit registers</strong>. Each is 64 flip-flops. The register file is a small, super-fast memory bank directly inside the CPU core:</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:8px; margin:12px 0;">
+      <div id="regfile-grid"></div>
+    </div>
+
+    <div class="card-row" style="margin-top:16px;">
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <h3>General Purpose</h3>
+        <p style="font-size:12px;">RAX, RBX, RCX, RDX, RSI, RDI, R8–R15. Used for arithmetic, arguments, return values.</p>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <h3 style="color:var(--cyan);">Special Purpose</h3>
+        <p style="font-size:12px;">RSP (stack pointer), RBP (base pointer), RIP (instruction pointer — where in the program we are).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 Why 64-bit? What changed?</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; flex-wrap:wrap;">
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--red); margin-bottom:4px;">16</div>
+        <h3 style="color:var(--red);">8086 (1978)</h3>
+        <p style="font-size:12px;">64 KB addressable RAM. Max integer: 65,535. Enough for simple programs.</p>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--amber); margin-bottom:4px;">32</div>
+        <h3 style="color:var(--amber);">386 (1985)</h3>
+        <p style="font-size:12px;">4 GB addressable RAM. Max integer: ~4 billion. Enabled Windows and modern OS.</p>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border);">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--cyan); margin-bottom:4px;">64</div>
+        <h3 style="color:var(--cyan);">Opteron (2003)</h3>
+        <p style="font-size:12px;">16 EB addressable RAM. Max integer: 18.4 quintillion. AI, servers, 4K video.</p>
+      </div>
+    </div>
+    <div class="note" style="margin-top:16px;"><strong>The key limit was RAM addressing.</strong> With 32-bit registers you can only address 2³² = 4 GB. Modern servers need terabytes. With 64-bit, the theoretical limit is 2⁶⁴ = 16 exabytes — more than enough for decades.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — RAM
+══════════════════════════════════════════ -->
+<section class="section" id="tab-ram">
+  <div class="hero-label">04 — Working Memory</div>
+  <h1>Is RAM made of Flip-Flops?</h1>
+  <p style="margin-top:10px;"><strong>No — and this surprises most people.</strong> CPU registers (SRAM cache) use flip-flops. But the RAM sticks in your computer use something far simpler and more compact: <strong>capacitors</strong>.</p>
+
+  <div class="card">
+    <h2>⚡ DRAM: 1 Transistor + 1 Capacitor per Bit</h2>
+    <p>Dynamic RAM stores each bit as a <strong>tiny electrical charge in a capacitor</strong> — like a microscopic rechargeable battery. One transistor acts as a gate to read/write it. That's it: 1T-1C.</p>
+
+    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; margin:12px 0;">
+      <div style="flex:1; min-width:200px;">
+        <svg viewBox="0 0 200 110" width="100%" style="max-width:260px; display:block; margin:0 auto;">
+          <!-- DRAM cell: transistor + capacitor -->
+          <!-- Bit Line (vertical) -->
+          <line x1="80" y1="5" x2="80" y2="105" stroke="var(--cyan)" stroke-width="1.5"/>
+          <text x="62" y="8" font-family="JetBrains Mono" font-size="8" fill="var(--cyan)">BL</text>
+
+          <!-- Word Line (horizontal) -->
+          <line x1="5" y1="45" x2="195" y2="45" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="160" y="42" font-family="JetBrains Mono" font-size="8" fill="var(--amber)">Word Line</text>
+
+          <!-- NMOS transistor symbol -->
+          <line x1="80" y1="45" x2="80" y2="65" stroke="var(--cyan)" stroke-width="1.5"/>
+          <line x1="80" y1="65" x2="100" y2="65" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="100" y1="55" x2="100" y2="75" stroke="var(--fg)" stroke-width="2"/>
+          <line x1="105" y1="55" x2="105" y2="75" stroke="var(--fg)" stroke-width="2"/>
+          <line x1="105" y1="58" x2="120" y2="58" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="105" y1="72" x2="120" y2="72" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="120" y1="58" x2="120" y2="72" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="120" y1="65" x2="140" y2="65" stroke="var(--fg)" stroke-width="1.5"/>
+
+          <!-- Gate from word line -->
+          <line x1="80" y1="45" x2="80" y2="45" stroke="var(--amber)" stroke-width="0"/>
+          <line x1="102" y1="45" x2="102" y2="55" stroke="var(--amber)" stroke-width="1.5"/>
+
+          <!-- Capacitor -->
+          <line x1="140" y1="55" x2="140" y2="65" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="130" y1="55" x2="150" y2="55" stroke="var(--fg)" stroke-width="2.5"/>
+          <line x1="130" y1="49" x2="150" y2="49" stroke="var(--fg)" stroke-width="2.5"/>
+          <line x1="140" y1="40" x2="140" y2="49" stroke="var(--fg)" stroke-width="1.5"/>
+          <line x1="140" y1="75" x2="140" y2="90" stroke="var(--fg)" stroke-width="1.5"/>
+          <!-- Ground -->
+          <line x1="130" y1="90" x2="150" y2="90" stroke="var(--fg3)" stroke-width="1.5"/>
+          <line x1="133" y1="94" x2="147" y2="94" stroke="var(--fg3)" stroke-width="1.5"/>
+          <line x1="136" y1="98" x2="144" y2="98" stroke="var(--fg3)" stroke-width="1.5"/>
+
+          <!-- Charge animation (yellow dot) -->
+          <circle cx="140" cy="52" r="5" fill="var(--amber)" opacity=".8" id="dram-charge"/>
+
+          <!-- Labels -->
+          <text x="148" y="43" font-family="JetBrains Mono" font-size="8" fill="var(--amber)">+</text>
+          <text x="148" y="58" font-family="JetBrains Mono" font-size="8" fill="var(--fg3)">C</text>
+          <text x="62" y="90" font-family="JetBrains Mono" font-size="8" fill="var(--fg3)">1T-1C</text>
+          <text x="62" y="100" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">cell</text>
+        </svg>
+      </div>
+
+      <div style="flex:1; min-width:220px;">
+        <h3>The Big Problem: Leakage</h3>
+        <p style="font-size:13px;">Capacitors <strong>slowly lose their charge</strong> even with no power applied — like a leaky bucket. A "1" bit gradually becomes indistinguishable from a "0" bit in milliseconds.</p>
+        <p style="font-size:13px;"><strong>Solution:</strong> The memory controller must <span class="tag tag-red">REFRESH</span> every row every ~64 milliseconds — re-read and re-write each cell before it forgets. This is why it's called <em>Dynamic</em> RAM.</p>
+
+        <div style="background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--red); margin-top:8px;">
+          <div style="font-size:12px; color:var(--fg2);">⏱️ Your 16 GB RAM has ~128 billion cells. The controller refreshes ALL of them every 64 ms, nonstop, while powered.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 Live DRAM Refresh Simulation</h2>
+    <p>Each cell below holds a 1 (bright) or 0 (dark). Watch the cells slowly <span style="color:var(--red);">leak</span> their charge. Hit Refresh before they all decay:</p>
+    <div class="memory-grid" id="dram-grid"></div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="refreshDRAM()">🔄 Refresh All Cells</button>
+      <button class="btn" id="leak-btn" onclick="toggleLeak()">▶ Start Leak</button>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--fg3); margin-top:4px;" id="dram-status">Stable. Click "Start Leak" to simulate capacitor discharge.</div>
+  </div>
+
+  <div class="card">
+    <h2>🆚 SRAM vs DRAM — The Trade-Off</h2>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:420px;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:11px;">Property</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--cyan);">SRAM</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--amber);">DRAM</th>
+          </tr>
+        </thead>
+        <tbody id="compare-table"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — SSD
+══════════════════════════════════════════ -->
+<section class="section" id="tab-ssd">
+  <div class="hero-label">05 — Permanent Storage</div>
+  <h1>What is an SSD Internally?</h1>
+  <p style="margin-top:10px;">SSDs are built from <strong>NAND flash memory</strong> — a completely different technology from both flip-flops and DRAM. Instead of holding charge in a leaky capacitor, flash <strong>traps electrons</strong> in an insulated "floating gate" — permanently, without power.</p>
+
+  <div class="card">
+    <h2>🔬 The Floating Gate Transistor</h2>
+    <p>The core of every SSD cell is a special transistor with an extra conductor sandwiched in its insulating layer. Electrons can be <em>forced into</em> this floating gate and stay there for 10+ years:</p>
+
+    <svg viewBox="0 0 320 140" width="100%" style="max-width:420px; display:block; margin:0 auto 16px;">
+      <!-- Substrate -->
+      <rect x="20" y="100" width="280" height="30" rx="4" fill="rgba(100,100,120,.2)" stroke="var(--fg3)" stroke-width="1"/>
+      <text x="160" y="118" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--fg3)">p-type Silicon Substrate</text>
+
+      <!-- Source -->
+      <rect x="20" y="80" width="60" height="22" rx="3" fill="rgba(34,211,238,.15)" stroke="var(--cyan)" stroke-width="1"/>
+      <text x="50" y="95" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">Source</text>
+
+      <!-- Drain -->
+      <rect x="240" y="80" width="60" height="22" rx="3" fill="rgba(34,211,238,.15)" stroke="var(--cyan)" stroke-width="1"/>
+      <text x="270" y="95" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">Drain</text>
+
+      <!-- Tunnel oxide -->
+      <rect x="80" y="80" width="160" height="10" rx="0" fill="rgba(167,139,250,.15)" stroke="var(--purple)" stroke-width="0.8"/>
+      <text x="10" y="88" font-family="JetBrains Mono" font-size="7" fill="var(--purple)">Tunnel Oxide</text>
+
+      <!-- Floating gate -->
+      <rect x="80" y="58" width="160" height="22" rx="3" fill="rgba(251,191,36,.2)" stroke="var(--amber)" stroke-width="1.5" id="fg-rect"/>
+      <text x="160" y="73" text-anchor="middle" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="var(--amber)">Floating Gate</text>
+
+      <!-- Electrons in floating gate -->
+      <g id="electron-group" opacity="0">
+        <circle cx="100" cy="69" r="3" fill="var(--red)"/>
+        <circle cx="115" cy="67" r="3" fill="var(--red)"/>
+        <circle cx="130" cy="70" r="3" fill="var(--red)"/>
+        <circle cx="145" cy="66" r="3" fill="var(--red)"/>
+        <circle cx="160" cy="69" r="3" fill="var(--red)"/>
+        <circle cx="175" cy="67" r="3" fill="var(--red)"/>
+        <circle cx="190" cy="70" r="3" fill="var(--red)"/>
+        <circle cx="205" cy="66" r="3" fill="var(--red)"/>
+        <circle cx="220" cy="69" r="3" fill="var(--red)"/>
+        <text x="160" y="85" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--red)">e⁻ e⁻ e⁻ e⁻ e⁻</text>
+      </g>
+
+      <!-- Control oxide -->
+      <rect x="80" y="44" width="160" height="14" rx="0" fill="rgba(100,100,160,.12)" stroke="var(--fg3)" stroke-width="0.8"/>
+      <text x="10" y="54" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">Control Oxide</text>
+
+      <!-- Control gate -->
+      <rect x="80" y="22" width="160" height="22" rx="3" fill="rgba(52,211,153,.15)" stroke="var(--green)" stroke-width="1"/>
+      <text x="160" y="37" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--green)">Control Gate</text>
+      <line x1="160" y1="10" x2="160" y2="22" stroke="var(--green)" stroke-width="1.5"/>
+      <text x="165" y="11" font-family="JetBrains Mono" font-size="8" fill="var(--green)">VG (Voltage)</text>
+
+      <!-- State label -->
+      <text x="160" y="135" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--fg3)" id="cell-state-label">State: Erased (1)</text>
+    </svg>
+
+    <div class="btn-row">
+      <button class="btn primary" onclick="programCell()">⚡ Program (write 0)</button>
+      <button class="btn" onclick="eraseCell()">🔓 Erase (write 1)</button>
+    </div>
+    <div class="note" id="flash-note">
+      <strong>Erased = "1":</strong> No electrons in the floating gate. The transistor conducts normally — read as 1.<br>
+      <strong>Programmed = "0":</strong> Electrons forced in by Fowler-Nordheim tunnelling at ~20V. They block the channel — read as 0.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📦 SLC / MLC / TLC — Bits per Cell</h2>
+    <p>The brilliant trick of modern NAND: <strong>multiple charge levels</strong> in one cell. Instead of just "charged/not charged", you can store partial charges to represent more than 1 bit:</p>
+
+    <div class="flash-cell-wrap" id="flash-cells"></div>
+
+    <div class="note">
+      <strong>QLC (4 bits/cell = 16 charge levels)</strong> is used in cheap consumer SSDs. <strong>SLC (1 bit/cell)</strong> is used in enterprise SSDs where endurance matters. More bits per cell = cheaper but fewer write cycles (~100K SLC, ~1K QLC).
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ NAND Architecture</h2>
+    <p>Cells are connected in series (like Christmas lights) in <strong>strings of 32–256</strong>. Strings share word lines (rows) and bit lines (columns), forming a page (read/write unit) and a block (erase unit):</p>
+
+    <svg viewBox="0 0 320 120" width="100%" style="max-width:420px; display:block; margin:8px auto;">
+      <!-- NAND string of cells -->
+      <text x="10" y="20" font-family="JetBrains Mono" font-size="8" fill="var(--fg3)">Bit Line (column)</text>
+      <line x1="40" y1="22" x2="280" y2="22" stroke="var(--cyan)" stroke-width="1.5"/>
+
+      <!-- 8 cells in a page -->
+      <g id="nand-string">
+      </g>
+
+      <!-- Page / block labels -->
+      <rect x="40" y="40" width="240" height="30" rx="3" fill="rgba(34,211,238,.05)" stroke="var(--cyan)" stroke-width="0.8" stroke-dasharray="4,2"/>
+      <text x="10" y="52" font-family="JetBrains Mono" font-size="7" fill="var(--cyan)">PAGE</text>
+      <text x="10" y="62" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">(4–16 KB)</text>
+
+      <rect x="40" y="40" width="240" height="70" rx="3" fill="rgba(251,191,36,.03)" stroke="var(--amber)" stroke-width="0.8" stroke-dasharray="6,3"/>
+      <text x="10" y="95" font-family="JetBrains Mono" font-size="7" fill="var(--amber)">BLOCK</text>
+      <text x="10" y="105" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">(256 KB–4 MB)</text>
+      <text x="160" y="108" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">Must erase entire block before rewriting any cell</text>
+
+      <!-- Word lines -->
+      <line x1="30" y1="55" x2="290" y2="55" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+      <line x1="30" y1="68" x2="290" y2="68" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+      <line x1="30" y1="82" x2="290" y2="82" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+
+      <!-- Draw 8 cells -->
+      <rect x="50"  y="47" width="20" height="16" rx="2" fill="rgba(251,191,36,.2)" stroke="var(--amber)" stroke-width="0.8"/>
+      <rect x="80"  y="47" width="20" height="16" rx="2" fill="rgba(34,211,238,.2)" stroke="var(--cyan)" stroke-width="0.8"/>
+      <rect x="110" y="47" width="20" height="16" rx="2" fill="rgba(251,191,36,.2)" stroke="var(--amber)" stroke-width="0.8"/>
+      <rect x="140" y="47" width="20" height="16" rx="2" fill="rgba(52,211,153,.2)" stroke="var(--green)" stroke-width="0.8"/>
+      <rect x="170" y="47" width="20" height="16" rx="2" fill="rgba(34,211,238,.2)" stroke="var(--cyan)" stroke-width="0.8"/>
+      <rect x="200" y="47" width="20" height="16" rx="2" fill="rgba(251,191,36,.2)" stroke="var(--amber)" stroke-width="0.8"/>
+      <rect x="230" y="47" width="20" height="16" rx="2" fill="rgba(167,139,250,.2)" stroke="var(--purple)" stroke-width="0.8"/>
+      <rect x="260" y="47" width="20" height="16" rx="2" fill="rgba(34,211,238,.2)" stroke="var(--cyan)" stroke-width="0.8"/>
+      <text x="285" y="57" font-family="JetBrains Mono" font-size="7" fill="var(--fg3)">←WL</text>
+    </svg>
+
+    <div class="note">
+      <strong>Write amplification:</strong> NAND must erase an entire block (~256 KB) before rewriting even a single bit. The SSD controller's FTL (Flash Translation Layer) manages this complexity — it's why SSDs have a TBW (Terabytes Written) rating and gradually wear out.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 6 — HIERARCHY
+══════════════════════════════════════════ -->
+<section class="section" id="tab-hier">
+  <div class="hero-label">06 — The Complete Picture</div>
+  <h1>The Memory Hierarchy</h1>
+  <p style="margin-top:10px;">Every storage technology we've seen lives on a spectrum: <strong>faster = smaller = more expensive = uses more power</strong>. The CPU uses all of them in a hierarchy:</p>
+
+  <div class="card">
+    <h2>🏔️ Speed vs Size vs Technology</h2>
+    <div class="hier" id="hier-viz"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Summary Table</h2>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; min-width:500px;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:10px;">Storage</th>
+            <th style="padding:9px 10px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:10px;">Technology</th>
+            <th style="padding:9px 10px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:10px;">Speed</th>
+            <th style="padding:9px 10px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:10px;">Volatile?</th>
+            <th style="padding:9px 10px; border-bottom:1px solid var(--border); color:var(--fg2); font-family:'JetBrains Mono',monospace; font-size:10px;">Flip-Flop?</th>
+          </tr>
+        </thead>
+        <tbody id="summary-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔄 When You Open an App</h2>
+    <p>Here's exactly what happens when you double-click a game icon:</p>
+    <div id="app-steps" style="display:flex; flex-direction:column; gap:8px; margin-top:4px;"></div>
+  </div>
+</section>
+
+<script>
+/* ══ TAB SWITCHING ══ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ══ FLIP-FLOP TAB ══ */
+let ffState = 0;
+function flipSingle() {
+  ffState = ffState ? 0 : 1;
+  const el = document.getElementById('ff-single');
+  el.dataset.v = ffState;
+  el.textContent = ffState;
+  el.classList.remove('bit-pop'); void el.offsetWidth; el.classList.add('bit-pop');
+  document.getElementById('ff-bubble-text').textContent = ffState;
+  document.getElementById('ff-bubble').setAttribute('stroke', ffState ? 'var(--cyan)' : 'var(--green)');
+}
+
+/* ══ 8-BIT REGISTER ══ */
+const reg8bits = new Array(8).fill(0);
+function buildReg8() {
+  const row = document.getElementById('reg8-row');
+  row.innerHTML = '';
+  reg8bits.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'ff-cell';
+    const bit = document.createElement('div');
+    bit.className = 'ff-bit';
+    bit.dataset.v = v;
+    bit.textContent = v;
+    bit.onclick = () => { reg8bits[i] ^= 1; updateReg8(); };
+    const lbl = document.createElement('div');
+    lbl.className = 'ff-label';
+    lbl.textContent = 'b' + (7 - i);
+    cell.appendChild(bit); cell.appendChild(lbl);
+    row.appendChild(cell);
+  });
+}
+function updateReg8() {
+  const val = reg8bits.reduce((a, b, i) => a + b * Math.pow(2, 7 - i), 0);
+  document.getElementById('reg8-dec').textContent = val;
+  document.getElementById('reg8-hex').textContent = '0x' + val.toString(16).toUpperCase().padStart(2,'0');
+  const ch = val >= 32 && val < 127 ? String.fromCharCode(val) : '·';
+  document.getElementById('reg8-ascii').textContent = ch;
+  document.querySelectorAll('#reg8-row .ff-bit').forEach((b, i) => {
+    b.dataset.v = reg8bits[i]; b.textContent = reg8bits[i];
+  });
+}
+function setReg8(v) {
+  v = Math.max(0, Math.min(255, Math.floor(v)));
+  for (let i = 0; i < 8; i++) reg8bits[i] = (v >> (7 - i)) & 1;
+  updateReg8();
+}
+buildReg8(); updateReg8();
+
+/* ══ 64-BIT REGISTER ══ */
+let reg64val = 0n;
+function buildReg64() {
+  const row = document.getElementById('reg64-row');
+  row.innerHTML = '';
+  for (let i = 63; i >= 0; i--) {
+    const b = document.createElement('div');
+    b.className = 'reg-bit off';
+    b.id = 'r64-' + i;
+    b.textContent = '0';
+    b.style.cursor = 'pointer';
+    b.onclick = () => { reg64val ^= (1n << BigInt(i)); updateReg64(); };
+    row.appendChild(b);
+  }
+}
+function updateReg64() {
+  for (let i = 63; i >= 0; i--) {
+    const v = (reg64val >> BigInt(i)) & 1n;
+    const el = document.getElementById('r64-' + i);
+    if (el) { el.className = 'reg-bit ' + (v ? 'on' : 'off'); el.textContent = v ? '1' : '0'; }
+  }
+  document.getElementById('reg64-dec').textContent = reg64val.toString();
+  document.getElementById('reg64-hex').textContent = '0x' + reg64val.toString(16).toUpperCase().padStart(16,'0');
+}
+function setReg64(v) { reg64val = BigInt(v); updateReg64(); }
+function randomReg64() { reg64val = BigInt(Math.floor(Math.random() * 2**32)) * 0x100000000n + BigInt(Math.floor(Math.random() * 2**32)); updateReg64(); }
+buildReg64(); updateReg64();
+
+/* ══ x86 EVOLUTION ══ */
+const evoData = [
+  { name:'AX',  bits:16, era:'8086 · 1978',  color:'var(--red)',    decade:'16-bit' },
+  { name:'EAX', bits:32, era:'80386 · 1985', color:'var(--amber)', decade:'32-bit' },
+  { name:'RAX', bits:64, era:'Opteron · 2003',color:'var(--cyan)', decade:'64-bit' },
+];
+const evoWrap = document.getElementById('evo-wrap');
+evoData.forEach(e => {
+  const row = document.createElement('div');
+  row.className = 'evo-reg';
+  const label = document.createElement('div');
+  label.className = 'evo-name'; label.style.color = e.color; label.textContent = e.name;
+  const bar = document.createElement('div');
+  bar.className = 'evo-bar';
+  bar.style.background = e.color + '18';
+  bar.style.border = '1px solid ' + e.color + '44';
+  bar.style.color = e.color;
+  bar.style.flex = e.bits / 64;
+  bar.style.minWidth = (e.bits / 64 * 100) + '%';
+  bar.style.maxWidth = '100%';
+  const inner = document.createElement('span');
+  inner.textContent = e.bits + ' bits (' + e.decade + ')';
+  const era = document.createElement('span');
+  era.className = 'evo-era'; era.textContent = e.era;
+  bar.appendChild(inner); bar.appendChild(era);
+  row.appendChild(label); row.appendChild(bar);
+  evoWrap.appendChild(row);
+});
+
+/* Register file grid */
+const regs = ['RAX','RBX','RCX','RDX','RSI','RDI','R8','R9','R10','R11','R12','R13','R14','R15','RSP','RBP','RIP'];
+const rfg = document.getElementById('regfile-grid');
+rfg.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;';
+regs.forEach(r => {
+  const isSpecial = ['RSP','RBP','RIP'].includes(r);
+  const d = document.createElement('div');
+  d.style.cssText = `background:var(--bg3);border:1px solid ${isSpecial ? 'var(--amber)' : 'var(--border)'};border-radius:6px;padding:7px 10px;`;
+  d.innerHTML = `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${isSpecial ? 'var(--amber)' : 'var(--cyan)'}">${r}</span><div style="font-size:10px;color:var(--fg3);margin-top:2px;">64 bits</div>`;
+  rfg.appendChild(d);
+});
+
+/* ══ DRAM GRID ══ */
+const DCOLS = 12, DROWS = 6, DTOTAL = DCOLS * DROWS;
+const dramCells = new Array(DTOTAL).fill(1);
+let leakInterval = null, leakRunning = false;
+
+function buildDRAMGrid() {
+  const g = document.getElementById('dram-grid');
+  g.innerHTML = '';
+  g.style.gridTemplateColumns = `repeat(${DCOLS}, 1fr)`;
+  dramCells.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'dram-cell ' + (v === 1 ? 'c1' : v === 2 ? 'leak' : 'c0');
+    c.id = 'dc-' + i;
+    c.textContent = v === 1 ? '1' : v === 2 ? '?' : '0';
+    g.appendChild(c);
+  });
+}
+function updateDRAMCell(i) {
+  const el = document.getElementById('dc-' + i);
+  if (!el) return;
+  el.className = 'dram-cell ' + (dramCells[i] === 1 ? 'c1' : dramCells[i] === 2 ? 'leak leaking' : 'c0');
+  el.textContent = dramCells[i] === 1 ? '1' : dramCells[i] === 2 ? '?' : '0';
+}
+function refreshDRAM() {
+  for (let i = 0; i < DTOTAL; i++) { if (dramCells[i] !== 0) { dramCells[i] = 1; updateDRAMCell(i); } }
+  document.getElementById('dram-status').textContent = 'Refreshed! All 1-cells recharged. The controller does this every 64 ms.';
+}
+function toggleLeak() {
+  leakRunning = !leakRunning;
+  document.getElementById('leak-btn').textContent = leakRunning ? '⏸ Stop Leak' : '▶ Start Leak';
+  if (leakRunning) {
+    leakInterval = setInterval(() => {
+      const ones = dramCells.map((v,i) => v===1 ? i : -1).filter(i => i>=0);
+      if (ones.length === 0) {
+        clearInterval(leakInterval); leakRunning = false;
+        document.getElementById('leak-btn').textContent = '▶ Start Leak';
+        document.getElementById('dram-status').textContent = 'All cells lost charge! Data is gone. This is why refresh is essential.';
+        return;
+      }
+      const pick = ones[Math.floor(Math.random() * ones.length)];
+      dramCells[pick] = 2; updateDRAMCell(pick);
+      setTimeout(() => { if (dramCells[pick] === 2) { dramCells[pick] = 0; updateDRAMCell(pick); }}, 800);
+      const leaked = dramCells.filter(v => v === 0).length;
+      document.getElementById('dram-status').textContent = leaked + ' cells have lost charge. ' + (DTOTAL - leaked - ones.length) + ' cells stable.';
+    }, 400);
+  } else {
+    clearInterval(leakInterval);
+  }
+}
+buildDRAMGrid();
+
+/* DRAM comparison table */
+const rows = [
+  ['Structure', '6 transistors (flip-flop)', '1 transistor + 1 capacitor'],
+  ['Bit size', '~100–150 nm²', '~6 nm²'],
+  ['Speed', '~1–5 ns', '~50–70 ns'],
+  ['Needs refresh?', '❌ No', '✅ Every 64 ms'],
+  ['Use case', 'L1/L2/L3 CPU cache', 'Main system RAM (DDR5)'],
+  ['Typical size', '32–64 MB (L3 cache)', '8–64 GB'],
+];
+const ct = document.getElementById('compare-table');
+rows.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td style="padding:9px 12px;border-bottom:1px solid var(--border);color:var(--fg2);">${r[0]}</td><td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">${r[1]}</td><td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">${r[2]}</td>`;
+  ct.appendChild(tr);
+});
+
+/* ══ FLASH CELL ANIMATION ══ */
+let cellProgrammed = false;
+function programCell() {
+  cellProgrammed = true;
+  document.getElementById('electron-group').style.opacity = '1';
+  document.getElementById('electron-group').style.transition = 'opacity .4s';
+  document.getElementById('fg-rect').style.fill = 'rgba(248,113,113,.3)';
+  document.getElementById('cell-state-label').textContent = 'State: Programmed (0) — electrons trapped';
+  document.getElementById('flash-note').innerHTML = '<strong>Programmed = "0":</strong> High voltage (~20V) applied to control gate forces electrons through the tunnel oxide by Fowler-Nordheim tunnelling. They are now <em>trapped</em> in the floating gate — this state survives power-off for 10+ years.';
+}
+function eraseCell() {
+  cellProgrammed = false;
+  document.getElementById('electron-group').style.opacity = '0';
+  document.getElementById('fg-rect').style.fill = 'rgba(251,191,36,.2)';
+  document.getElementById('cell-state-label').textContent = 'State: Erased (1) — floating gate empty';
+  document.getElementById('flash-note').innerHTML = '<strong>Erased = "1":</strong> High negative voltage applied to the substrate. Electrons tunnel <em>back out</em> of the floating gate through the tunnel oxide. The cell now reads as 1. NAND can only erase in large <em>blocks</em>, never individual cells.';
+}
+
+/* SLC/MLC/TLC/QLC flash cells */
+const flashTypes = [
+  { name:'SLC', bits:1, levels:2, charges:[0,100], labels:['0','1'], life:'100K cycles' },
+  { name:'MLC', bits:2, levels:4, charges:[0,33,66,100], labels:['11','10','00','01'], life:'10K cycles' },
+  { name:'TLC', bits:3, levels:8, charges:[0,14,28,42,57,71,85,100], labels:['111','110','100','101','001','000','010','011'], life:'3K cycles' },
+  { name:'QLC', bits:4, levels:16, charges:Array.from({length:16},(_, i)=>i*100/15), labels:Array.from({length:16},(_, i)=>i.toString(2).padStart(4,'0')), life:'~1K cycles' },
+];
+const fcw = document.getElementById('flash-cells');
+flashTypes.forEach((t, fi) => {
+  const cell = document.createElement('div');
+  cell.className = 'flash-cell';
+  cell.innerHTML = `<div class="flash-cell-title">${t.name} (${t.bits}-bit)</div>`;
+
+  // Mini level diagram
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox', '0 0 80 60');
+  svg.setAttribute('width', '80'); svg.setAttribute('height', '60');
+  const colors = ['#22d3ee','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#38bdf8','#4ade80','#facc15','#f472b6','#c084fc','#60a5fa','#86efac','#fde68a','#fca5a5','#c4b5fd'];
+  t.charges.slice(0,8).forEach((pct, i) => {
+    const x = 5 + i * 9; const barH = pct / 100 * 40;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', 55 - barH);
+    rect.setAttribute('width', 7); rect.setAttribute('height', barH);
+    rect.setAttribute('rx', 1); rect.setAttribute('fill', colors[i % colors.length]);
+    rect.setAttribute('opacity', '0.8');
+    svg.appendChild(rect);
+  });
+  if (t.charges.length > 8) {
+    const more = document.createElementNS('http://www.w3.org/2000/svg','text');
+    more.setAttribute('x','77'); more.setAttribute('y','30');
+    more.setAttribute('text-anchor','end'); more.setAttribute('font-size','7');
+    more.setAttribute('fill','var(--fg3)'); more.setAttribute('font-family','JetBrains Mono');
+    more.textContent = '+' + (t.charges.length-8) + '…';
+    svg.appendChild(more);
+  }
+  cell.appendChild(svg);
+  cell.innerHTML += `<div class="charge-label">${t.levels} charge levels</div><div class="flash-bits">${t.bits} bit${t.bits>1?'s':''}/cell</div><div style="font-size:9px;color:var(--fg3);margin-top:4px;">${t.life}</div>`;
+  fcw.appendChild(cell);
+});
+
+/* ══ HIERARCHY ══ */
+const hierData = [
+  { name:'CPU Registers', tech:'SRAM (6T flip-flops)', size:'256–512 B', speed:'0.3 ns', color:'var(--cyan)',   volatile:true,  ff:true  },
+  { name:'L1 Cache',      tech:'SRAM (6T flip-flops)', size:'32–128 KB',  speed:'1 ns',   color:'var(--cyan)',   volatile:true,  ff:true  },
+  { name:'L2 Cache',      tech:'SRAM (6T flip-flops)', size:'256 KB–4 MB',speed:'4 ns',   color:'#67e8f9',      volatile:true,  ff:true  },
+  { name:'L3 Cache',      tech:'SRAM (6T flip-flops)', size:'8–64 MB',    speed:'10 ns',  color:'#a5f3fc',      volatile:true,  ff:true  },
+  { name:'RAM (DDR5)',     tech:'DRAM (1T-1C)',         size:'8–128 GB',   speed:'60 ns',  color:'var(--amber)',  volatile:true,  ff:false },
+  { name:'SSD (NVMe)',     tech:'NAND Flash',           size:'500 GB–8 TB',speed:'50 µs',  color:'var(--green)', volatile:false, ff:false },
+  { name:'HDD',           tech:'Magnetic platters',    size:'1–20 TB',    speed:'10 ms',  color:'var(--fg3)',    volatile:false, ff:false },
+];
+const hv = document.getElementById('hier-viz');
+const maxBar = 700;
+hierData.forEach((h, i) => {
+  const row = document.createElement('div');
+  row.className = 'hier-row';
+  const box = document.createElement('div');
+  box.className = 'hier-box';
+  const frac = 1 - i / (hierData.length - 1);
+  box.style.background = h.color + '14';
+  box.style.border = '1px solid ' + h.color + '44';
+  box.style.minWidth = '0';
+  box.style.flex = '1';
+  box.innerHTML = `<span style="color:${h.color};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;">${h.name}</span><span class="hier-speed" style="color:${h.color};">${h.speed} · ${h.size}</span>`;
+  const info = document.createElement('div');
+  info.style.cssText = 'font-size:11px;color:var(--fg3);min-width:100px;text-align:right;';
+  info.innerHTML = `<span class="tag ${h.ff ? 'tag-cyan' : 'tag-amber'}">${h.ff ? 'Flip-Flop' : h.volatile ? 'Capacitor' : 'Flash'}</span>`;
+  row.appendChild(box); row.appendChild(info);
+  hv.appendChild(row);
+});
+
+/* Summary table */
+const sumData = [
+  ['CPU Register', 'SRAM flip-flop (6T)', '~0.3 ns', 'Yes', 'YES ✅'],
+  ['L1–L3 Cache',  'SRAM flip-flop (6T)', '1–10 ns',  'Yes', 'YES ✅'],
+  ['RAM (DDR5)',    'DRAM capacitor (1T1C)','60–70 ns','Yes', 'NO ❌'],
+  ['SSD (NVMe)',    'NAND Flash (floating gate)','50 µs','No','NO ❌'],
+  ['HDD',          'Magnetic domains','5–10 ms','No','NO ❌'],
+];
+const st = document.getElementById('summary-table');
+sumData.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;color:var(--fg);">${r[0]}</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg2);">${r[1]}</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">${r[2]}</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;font-size:11px;">${r[3]==='Yes'?'<span class="tag tag-red">Volatile</span>':'<span class="tag tag-green">Persistent</span>'}</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:11px;color:${r[4].includes('YES')?'var(--cyan)':'var(--fg3)'};">${r[4]}</td>`;
+  st.appendChild(tr);
+});
+
+/* App launch steps */
+const steps = [
+  { icon:'💾', label:'SSD → RAM', desc:'OS reads the game\'s executable from NAND flash (~50 µs/read). Loads 2–10 GB of data into DRAM capacitor cells via the memory controller.' },
+  { icon:'🧊', label:'RAM → L3 Cache', desc:'CPU fetches 64-byte cache lines from DRAM (~60 ns each). Lines fill the L3 SRAM cache (6T flip-flop arrays, 8–64 MB).' },
+  { icon:'⚡', label:'L3 → L1 Cache', desc:'Hot code paths promoted to L1 SRAM (~1 ns). Now in flip-flop arrays just nanometers from the CPU core.' },
+  { icon:'🧠', label:'L1 → Registers', desc:'Instruction fetch loads machine code into the instruction register. Data loads into RAX, RBX… — 64-bit flip-flop arrays. This is where your code actually runs.' },
+  { icon:'➕', label:'ALU executes', desc:'ADD RAX, RBX reads two registers, computes the sum combinatorially in picoseconds, writes result back to a register. Done in one clock cycle (~0.3 ns at 3 GHz).' },
+];
+const as = document.getElementById('app-steps');
+steps.forEach((s, i) => {
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;gap:12px;align-items:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;';
+  d.innerHTML = `<div style="font-size:1.3rem;flex-shrink:0;">${s.icon}</div><div><div style="font-family:\'JetBrains Mono\',monospace;font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:3px;">${i+1}. ${s.label}</div><div style="font-size:12px;color:var(--fg2);">${s.desc}</div></div>`;
+  as.appendChild(d);
+});
+</script>
