@@ -6,6 +6,7 @@ import { useSession } from "@/hooks/useSession";
 import { Lesson, AgeGroup } from "@/lib/types";
 import QuizComponent from "@/components/Quiz/QuizComponent";
 import StoryViewer from "@/components/Lesson/StoryViewer";
+import NarrativeViewer from "@/components/Lesson/NarrativeViewer";
 import FolderAnimation from "@/components/animations/FolderAnimation";
 import CpuAnimation from "@/components/animations/CpuAnimation";
 import RamAnimation from "@/components/animations/RamAnimation";
@@ -17,6 +18,50 @@ import PCComponentAnimation from "@/components/animations/PCComponentAnimation";
 import ArchitectureDiagram from "@/components/animations/ArchitectureDiagram";
 import PlacementGuide from "@/components/animations/PlacementGuide";
 import SlotGame from "@/components/Explore/SlotGame";
+import { DIAGRAM_REGISTRY } from "@/components/diagrams/registry";
+
+/* ── Diagrams to show in the Explore Interactive Playground per lesson ── */
+const EXPLORE_DIAGRAMS: Record<string, [string, string]> = {
+  battery:            ["battery-levels",        "charge-cycle"],
+  binary:             ["binary-switches",        "binary-numbers"],
+  "bits-bytes":       ["bits-bytes-sizes",       "data-in-bits"],
+  computer:           ["computer-parts",         "how-computer-works"],
+  "cooling-fan":      ["heat-flow",              "thermal-paste"],
+  cpu:                ["cpu-why-we-need",         "cpu-fetch-decode-execute"],
+  "cyber-hygiene":    ["password-strength",      "phishing-warning"],
+  "drag-drop":        ["drag-drop-demo",         "event-flow"],
+  "dual-boot":        ["dual-boot-choice",       "partition-layout"],
+  files:              ["file-types",             "file-system-tree"],
+  folder:             ["folder-hierarchy",       "folder-vs-file"],
+  gpu:                ["gpu-vs-cpu",             "gpu-render-pipeline"],
+  "hard-disk":        ["hdd-vs-ssd",             "storage-sizes"],
+  "hex-colors":       ["hex-color-wheel",        "hex-breakdown"],
+  hexadecimal:        ["hex-table",              "hex-in-code"],
+  "internet-www":     ["internet-packets",       "dns-flow"],
+  laptop:             ["laptop-vs-desktop",      "laptop-parts"],
+  "linux-os":         ["linux-layers",           "terminal-commands"],
+  "machine-language": ["compilation-flow",       "instruction-set"],
+  "memory-allocation":["virtual-memory",         "stack-heap"],
+  motherboard:        ["motherboard-layout",     "data-bus"],
+  os:                 ["os-kernel-shell-rings",  "os-shell-kernel-flow"],
+  "pc-hardware":      ["pc-build-overview",      "component-compatibility"],
+  phone:              ["smartphone-hardware",    "mobile-os"],
+  pixels:             ["pixel-grid",             "pixel-density"],
+  presentations:      ["slide-structure",        "presentation-flow"],
+  "python-intro":     ["python-code",            "python-vs-english"],
+  ram:                ["ram-workspace",           "ram-vs-ssd"],
+  resolution:         ["resolution-comparison",  "pixel-density"],
+  rgb:                ["rgb-mixer",              "light-mixing"],
+  rom:                ["rom-vs-ram",             "bios-boot"],
+  "scratch-intro":    ["scratch-blocks",         "scratch-vs-code"],
+  software:           ["software-layers",        "app-vs-os"],
+  spreadsheets:       ["cell-grid",              "formulas"],
+  ssd:                ["ssd-vs-disk",            "flash-memory"],
+  "ssd-deep":         ["nvme-protocol",          "nand-types"],
+  tablet:             ["tablet-use-cases",       "tablet-vs-laptop"],
+  "what-is-code":     ["code-as-recipe",         "programming-concepts"],
+  "word-processing":  ["doc-formatting",         "file-formats"],
+};
 
 /* ── Page-level background gradients per lesson ── */
 const PAGE_BG: Record<string, string> = {
@@ -77,7 +122,7 @@ const ACCENT: Record<string, string> = {
 };
 
 /* Sidebar sections per lesson */
-interface Section { id: string; label: string; emoji: string; tab: "story" | "explore" | "quiz" }
+interface Section { id: string; label: string; emoji: string; tab: "story" | "explore" | "quiz"; scrollTo?: string }
 const SECTIONS: Record<string, Section[]> = {
   cpu: [
     { id: "what",    label: "What is a CPU?",        emoji: "🧠", tab: "story" },
@@ -107,6 +152,12 @@ const SECTIONS: Record<string, Section[]> = {
     { id: "what",    label: "What is an SSD?",        emoji: "⚡", tab: "story" },
     { id: "how",     label: "How flash works",        emoji: "💡", tab: "explore" },
     { id: "layers",  label: "SSD internals",          emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+  os: [
+    { id: "what",    label: "What is an OS?",         emoji: "🖱️", tab: "story" },
+    { id: "kernel",  label: "Kernel & Shell",         emoji: "🔵", tab: "story" },
+    { id: "boot",    label: "How Booting Works",      emoji: "🔄", tab: "story", scrollTo: "os-boot-sequence" },
     { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
   ],
 };
@@ -163,6 +214,12 @@ export default function LessonPage({ lesson }: Props) {
   function handleSection(s: Section) {
     setActiveSection(s.id);
     setTab(s.tab);
+    if (s.tab === "story" && s.scrollTo) {
+      setTimeout(() => {
+        const el = document.getElementById(`narrative-section-${s.scrollTo}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
   }
 
   const avatarEmoji = session?.avatar === "robot" ? "🤖"
@@ -315,11 +372,20 @@ export default function LessonPage({ lesson }: Props) {
                 transition={{ duration: 0.25 }}
                 className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/80 overflow-hidden"
               >
-                <StoryViewer
-                  lesson={lesson}
-                  ageGroup={ageGroup}
-                  onContinue={() => { setTab("explore"); setActiveSection("how"); }}
-                />
+                {lesson.narrative ? (
+                  <NarrativeViewer
+                    lesson={lesson}
+                    ageGroup={ageGroup}
+                    accent={accent}
+                    onContinue={() => { setTab("explore"); setActiveSection("how"); }}
+                  />
+                ) : (
+                  <StoryViewer
+                    lesson={lesson}
+                    ageGroup={ageGroup}
+                    onContinue={() => { setTab("explore"); setActiveSection("how"); }}
+                  />
+                )}
               </motion.div>
             )}
 
@@ -332,62 +398,63 @@ export default function LessonPage({ lesson }: Props) {
                 transition={{ duration: 0.25 }}
                 className="flex flex-col gap-5"
               >
-                {/* Real photo + caption */}
-                {lesson.photo && (
-                  <div className="rounded-2xl overflow-hidden shadow-lg relative">
-                    <img
-                      src={lesson.photo}
-                      alt={lesson.photoAlt ?? lesson.title}
-                      className="w-full h-52 object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                    <div
-                      className="absolute bottom-0 left-0 right-0 px-4 py-2 text-xs text-white/80 font-medium"
-                      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                {/* ── Interactive Playground — FIRST so students interact immediately ── */}
+                <InteractivePlayground
+                  lesson={lesson}
+                  accent={accent}
+                  AnimComp={AnimComp}
+                  isEngineeringMode={isEngineeringMode}
+                />
+
+                {/* Real photo + key facts — below the interactive section */}
+                {(lesson.photo || (lesson.keyFacts && lesson.keyFacts.length > 0)) && (
+                  <details className="group">
+                    <summary
+                      className="cursor-pointer list-none flex items-center gap-2 text-xs font-black uppercase tracking-widest py-1"
+                      style={{ color: accent }}
                     >
-                      📸 {lesson.photoAlt ?? lesson.title}
-                    </div>
-                  </div>
-                )}
-
-                {/* Key facts grid */}
-                {lesson.keyFacts && lesson.keyFacts.length > 0 && (
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accent }}>
-                      📊 Key Facts
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {lesson.keyFacts.map((fact, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.06 }}
-                          className="rounded-xl p-3.5 flex gap-3 items-start"
-                          style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}
-                        >
-                          <span className="text-xl mt-0.5 shrink-0">{fact.emoji}</span>
-                          <div>
-                            <p className="text-xs font-black text-gray-700">{fact.label}</p>
-                            <p className="text-sm font-bold mt-0.5" style={{ color: accent }}>{fact.value}</p>
-                            {fact.detail && (
-                              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{fact.detail}</p>
-                            )}
+                      <span className="transition-transform group-open:rotate-90 inline-block">▶</span>
+                      📊 Key Facts &amp; Real Photo
+                    </summary>
+                    <div className="mt-3 flex flex-col gap-4">
+                      {lesson.photo && (
+                        <div className="rounded-2xl overflow-hidden shadow-lg relative">
+                          <img
+                            src={lesson.photo}
+                            alt={lesson.photoAlt ?? lesson.title}
+                            className="w-full h-52 object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                          <div
+                            className="absolute bottom-0 left-0 right-0 px-4 py-2 text-xs text-white/80 font-medium"
+                            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                          >
+                            📸 {lesson.photoAlt ?? lesson.title}
                           </div>
-                        </motion.div>
-                      ))}
+                        </div>
+                      )}
+                      {lesson.keyFacts && lesson.keyFacts.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {lesson.keyFacts.map((fact, i) => (
+                            <div
+                              key={i}
+                              className="rounded-xl p-3.5 flex gap-3 items-start"
+                              style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}
+                            >
+                              <span className="text-xl mt-0.5 shrink-0">{fact.emoji}</span>
+                              <div>
+                                <p className="text-xs font-black text-gray-700">{fact.label}</p>
+                                <p className="text-sm font-bold mt-0.5" style={{ color: accent }}>{fact.value}</p>
+                                {fact.detail && (
+                                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{fact.detail}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-
-                {/* Drag-to-slot PC builder game — PC hardware / motherboard lessons */}
-                {PC_PARTS_LESSONS.has(lesson.id) && (
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accent }}>
-                      🎮 Interactive: Build the PC
-                    </p>
-                    <SlotGame />
-                  </div>
+                  </details>
                 )}
 
                 {/* Do's and Don'ts */}
@@ -479,6 +546,98 @@ export default function LessonPage({ lesson }: Props) {
           />
         </aside>
 
+      </div>
+    </div>
+  );
+}
+
+/* ─── Interactive Playground: diagrams + hands-on widget ─── */
+function InteractivePlayground({
+  lesson,
+  accent,
+  AnimComp,
+  isEngineeringMode,
+}: {
+  lesson: Lesson;
+  accent: string;
+  AnimComp?: React.ComponentType;
+  isEngineeringMode: boolean;
+}) {
+  const diagramKeys = EXPLORE_DIAGRAMS[lesson.id];
+  const hasDiagrams = !!diagramKeys;
+  const hasAnimComp = !!AnimComp && !isEngineeringMode;
+  const hasPCBuilder = PC_PARTS_LESSONS.has(lesson.id);
+
+  // Build tabs: diagrams first, then hands-on widget if available
+  type PlayTab = "d1" | "d2" | "widget" | "pcbuilder";
+  const tabs: { id: PlayTab; label: string }[] = [
+    ...(hasDiagrams ? [
+      { id: "d1" as PlayTab, label: diagramKeys[0].split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ") },
+      { id: "d2" as PlayTab, label: diagramKeys[1].split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ") },
+    ] : []),
+    ...(hasAnimComp  ? [{ id: "widget"    as PlayTab, label: "🎮 Try It" }]     : []),
+    ...(hasPCBuilder ? [{ id: "pcbuilder" as PlayTab, label: "🔧 Build PC" }]  : []),
+  ];
+
+  const [active, setActive] = useState<PlayTab>(tabs[0]?.id ?? "d1");
+
+  if (tabs.length === 0) return null;
+
+  const D1 = hasDiagrams ? DIAGRAM_REGISTRY[diagramKeys[0]] : null;
+  const D2 = hasDiagrams ? DIAGRAM_REGISTRY[diagramKeys[1]] : null;
+
+  return (
+    <div>
+      <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accent }}>
+        🎮 Interactive Playground
+      </p>
+      <div className="rounded-2xl overflow-hidden border" style={{ borderColor: `${accent}30`, background: `${accent}06` }}>
+
+        {/* Tab strip */}
+        {tabs.length > 1 && (
+          <div className="flex border-b" style={{ borderColor: `${accent}20`, background: "rgba(255,255,255,0.6)" }}>
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActive(t.id)}
+                className="flex-1 py-2.5 text-xs font-black transition-all"
+                style={{
+                  borderBottom: active === t.id ? `2.5px solid ${accent}` : "2.5px solid transparent",
+                  color: active === t.id ? accent : "#94A3B8",
+                  background: active === t.id ? `${accent}10` : "transparent",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-4">
+          <AnimatePresence mode="wait">
+            {active === "d1" && D1 && (
+              <motion.div key="d1" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <D1 accent={accent} />
+              </motion.div>
+            )}
+            {active === "d2" && D2 && (
+              <motion.div key="d2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <D2 accent={accent} />
+              </motion.div>
+            )}
+            {active === "widget" && AnimComp && (
+              <motion.div key="widget" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <AnimComp />
+              </motion.div>
+            )}
+            {active === "pcbuilder" && (
+              <motion.div key="pcbuilder" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <SlotGame />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

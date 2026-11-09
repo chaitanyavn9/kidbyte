@@ -454,6 +454,56 @@ const SCENES: Record<string, Scene[]> = {
       connection: "Never trust user input — always treat it as data, never as executable code",
     },
   ],
+  os: [
+    {
+      title: "The OS is Two Rings",
+      realWorld: {
+        emoji: "🏫",
+        label: "School Building",
+        description: "Inside the school: the principal's office (the core, where all final decisions happen). Outside: the corridors and classrooms where students (programs) work. Students can't walk into the principal's office uninvited — they go through a secretary (system call).",
+        color: "#E11D48",
+      },
+      technical: {
+        emoji: "🔵",
+        label: "Kernel (Ring 0) + Shell (Ring 3)",
+        description: "The Kernel runs in ring 0 — highest privilege, full access to hardware. User apps run in ring 3 — restricted. A system call is the controlled door between them.",
+        color: "#7C3AED",
+      },
+      connection: "Two rings, one trusted (kernel), one restricted (user) — separated by hardware privilege",
+    },
+    {
+      title: "Boot = Waking Up a City",
+      realWorld: {
+        emoji: "🌅",
+        label: "City waking up at dawn",
+        description: "Before anyone can work, the power grid turns on (BIOS/UEFI), then inspectors check everything works (POST), then the mayor arrives and takes charge (Kernel loads), and finally offices open for business (Shell starts).",
+        color: "#F59E0B",
+      },
+      technical: {
+        emoji: "🔄",
+        label: "BIOS → POST → Bootloader → Kernel → Shell",
+        description: "BIOS wakes up first (from ROM chip), runs POST to check hardware, reads CMOS for boot order, loads the bootloader from disk, which loads the Kernel into RAM, which then starts the Shell.",
+        color: "#059669",
+      },
+      connection: "Every boot is a carefully ordered startup — each step depends on the last",
+    },
+    {
+      title: "Multi-tasking = Many Workers, One Manager",
+      realWorld: {
+        emoji: "🏭",
+        label: "Factory with One Manager",
+        description: "One floor manager, twenty workers. The manager (kernel) allocates machines (CPU time), materials (RAM), and workspace to each worker. No worker can grab another's materials directly.",
+        color: "#0891B2",
+      },
+      technical: {
+        emoji: "⚙️",
+        label: "Process Scheduler + Memory Isolation",
+        description: "The kernel's scheduler gives each process tiny CPU time-slices (milliseconds). The virtual memory manager gives each process its own private address space — total isolation, managed by the same kernel.",
+        color: "#6366F1",
+      },
+      connection: "One kernel manages many processes — time-sharing the CPU and isolating memory",
+    },
+  ],
   default: [
     {
       title: "How Computers Think",

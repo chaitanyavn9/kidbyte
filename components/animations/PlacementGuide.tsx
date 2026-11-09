@@ -154,17 +154,17 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
   const component = PLACEMENTS.find((p) => p.id === selected)!;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
         <span className="text-lg">🏠</span>
-        <span className="font-semibold text-sm text-white/90">Component Placement Guide</span>
+        <span className="font-semibold text-sm text-gray-800">Component Placement Guide</span>
       </div>
 
       <div className="p-4 flex flex-col gap-4">
         {/* House Analogy Overview */}
-        <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-          <p className="text-xs text-white/50 mb-2 font-medium uppercase tracking-wide">The PC Case = A House Floor Plan</p>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">The PC Case = A House Floor Plan</p>
           <div className="relative w-full" style={{ paddingBottom: "70%" }}>
             <svg
               viewBox="0 0 100 95"
@@ -172,36 +172,34 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
               style={{ fontFamily: "inherit" }}
             >
               {/* Outer case */}
-              <rect x="3" y="3" width="94" height="89" rx="3" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" />
+              <rect x="3" y="3" width="94" height="89" rx="3" fill="rgba(0,0,0,0.02)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.8" />
               {/* PSU zone */}
               <rect x={PSU_ZONE.x} y={PSU_ZONE.y} width={PSU_ZONE.w} height={PSU_ZONE.h} rx="2"
-                fill="rgba(251,191,36,0.1)" stroke="rgba(251,191,36,0.4)" strokeWidth="0.5" />
-              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 6} textAnchor="middle" fontSize="4.5" fill="rgba(251,191,36,0.9)">{PSU_ZONE.emoji}</text>
-              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 11} textAnchor="middle" fontSize="2.8" fill="rgba(251,191,36,0.7)">PSU</text>
-              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 15} textAnchor="middle" fontSize="2.5" fill="rgba(251,191,36,0.6)">(Power Station)</text>
+                fill="rgba(251,191,36,0.15)" stroke="rgba(217,119,6,0.5)" strokeWidth="0.5" />
+              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 6} textAnchor="middle" fontSize="4.5" fill="rgba(180,100,0,0.9)">{PSU_ZONE.emoji}</text>
+              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 11} textAnchor="middle" fontSize="2.8" fill="rgba(146,64,14,0.8)">PSU</text>
+              <text x={PSU_ZONE.x + PSU_ZONE.w / 2} y={PSU_ZONE.y + 15} textAnchor="middle" fontSize="2.5" fill="rgba(146,64,14,0.6)">(Power Station)</text>
 
               {/* Power lines from PSU */}
-              <line x1="25" y1="79" x2="44" y2="27" stroke="rgba(251,191,36,0.25)" strokeWidth="0.4" strokeDasharray="2,1.5" />
-              <line x1="25" y1="79" x2="58" y2="55" stroke="rgba(251,191,36,0.25)" strokeWidth="0.4" strokeDasharray="2,1.5" />
-              <line x1="25" y1="79" x2="73" y2="27" stroke="rgba(251,191,36,0.25)" strokeWidth="0.4" strokeDasharray="2,1.5" />
+              <line x1="25" y1="79" x2="44" y2="27" stroke="rgba(217,119,6,0.3)" strokeWidth="0.4" strokeDasharray="2,1.5" />
+              <line x1="25" y1="79" x2="58" y2="55" stroke="rgba(217,119,6,0.3)" strokeWidth="0.4" strokeDasharray="2,1.5" />
+              <line x1="25" y1="79" x2="73" y2="27" stroke="rgba(217,119,6,0.3)" strokeWidth="0.4" strokeDasharray="2,1.5" />
 
               {/* Component zones */}
               {HOUSE_ZONES.filter((z) => z.id !== "motherboard").map((zone) => {
                 const isSelected = zone.id === selected;
-                const alpha = isSelected ? "0.25" : "0.08";
-                const strokeAlpha = isSelected ? "0.9" : "0.3";
                 return (
                   <g key={zone.id} style={{ cursor: "pointer" }} onClick={() => setSelected(zone.id)}>
                     <rect
                       x={zone.x} y={zone.y} width={zone.w} height={zone.h} rx="2"
-                      fill={`${zone.color}${isSelected ? "44" : "15"}`}
+                      fill={`${zone.color}${isSelected ? "33" : "18"}`}
                       stroke={zone.color}
-                      strokeWidth={isSelected ? "1" : "0.5"}
-                      strokeOpacity={parseFloat(strokeAlpha)}
+                      strokeWidth={isSelected ? "1.2" : "0.6"}
+                      strokeOpacity={isSelected ? 1 : 0.5}
                     />
-                    <text x={zone.x + zone.w / 2} y={zone.y + 7} textAnchor="middle" fontSize="5" fill={zone.color} opacity="0.9">{zone.emoji}</text>
+                    <text x={zone.x + zone.w / 2} y={zone.y + 7} textAnchor="middle" fontSize="5" fill={zone.color} opacity="1">{zone.emoji}</text>
                     {zone.label.split("\n").map((line, i) => (
-                      <text key={i} x={zone.x + zone.w / 2} y={zone.y + 13 + i * 3.5} textAnchor="middle" fontSize="2.6" fill="rgba(255,255,255,0.75)">{line}</text>
+                      <text key={i} x={zone.x + zone.w / 2} y={zone.y + 13 + i * 3.5} textAnchor="middle" fontSize="2.6" fill="rgba(30,30,30,0.75)" fontWeight={isSelected ? "600" : "400"}>{line}</text>
                     ))}
                   </g>
                 );
@@ -210,20 +208,19 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
               {/* Fan labels */}
               {FAN_ZONES.map((fan, i) => (
                 <g key={i}>
-                  <text x={fan.x} y={fan.y + 4} textAnchor="middle" fontSize="4" fill="rgba(99,202,255,0.6)">{fan.emoji}</text>
+                  <text x={fan.x} y={fan.y + 4} textAnchor="middle" fontSize="4" fill="rgba(14,116,144,0.7)">{fan.emoji}</text>
                   {fan.label.split("\n").map((line, j) => (
-                    <text key={j} x={fan.x} y={fan.y + 8 + j * 3} textAnchor="middle" fontSize="2.3" fill="rgba(99,202,255,0.5)">{line}</text>
+                    <text key={j} x={fan.x} y={fan.y + 8 + j * 3} textAnchor="middle" fontSize="2.3" fill="rgba(14,116,144,0.6)">{line}</text>
                   ))}
                 </g>
               ))}
 
               {/* Airflow arrows */}
-              <path d="M 5 48 L 10 48" stroke="rgba(99,202,255,0.4)" strokeWidth="0.6" markerEnd="url(#arr)" />
-              <path d="M 90 42 L 95 42" stroke="rgba(99,202,255,0.4)" strokeWidth="0.6" />
-              <text x="94" y="38" fontSize="3" fill="rgba(99,202,255,0.4)">→</text>
+              <path d="M 5 48 L 10 48" stroke="rgba(14,116,144,0.5)" strokeWidth="0.6" />
+              <text x="94" y="38" fontSize="3" fill="rgba(14,116,144,0.5)">→</text>
             </svg>
           </div>
-          <p className="text-xs text-white/40 mt-1 text-center">Click a room to explore the component</p>
+          <p className="text-xs text-gray-400 mt-1 text-center">Click a room to explore the component</p>
         </div>
 
         {/* Component Selector */}
@@ -234,9 +231,9 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
               onClick={() => setSelected(p.id)}
               className="px-2 py-1 rounded-lg text-xs font-medium transition-all"
               style={{
-                background: selected === p.id ? p.color + "33" : "rgba(255,255,255,0.05)",
-                border: `1px solid ${selected === p.id ? p.color + "88" : "rgba(255,255,255,0.1)"}`,
-                color: selected === p.id ? p.color : "rgba(255,255,255,0.6)",
+                background: selected === p.id ? p.color + "22" : "rgba(0,0,0,0.04)",
+                border: `1.5px solid ${selected === p.id ? p.color : "rgba(0,0,0,0.12)"}`,
+                color: selected === p.id ? p.color : "rgba(0,0,0,0.55)",
               }}
             >
               {p.emoji} {p.name}
@@ -253,29 +250,29 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
             className="rounded-lg border overflow-hidden"
-            style={{ borderColor: component.color + "40" }}
+            style={{ borderColor: component.color + "55" }}
           >
             {/* House analogy header */}
-            <div className="px-4 py-3 flex items-start gap-3" style={{ background: component.color + "18" }}>
+            <div className="px-4 py-3 flex items-start gap-3" style={{ background: component.color + "12" }}>
               <span className="text-2xl">{component.houseEmoji}</span>
               <div>
                 <p className="text-xs font-semibold" style={{ color: component.color }}>
                   {component.emoji} {component.name} = {component.houseRoom}
                 </p>
-                <p className="text-xs text-white/65 mt-1 leading-relaxed">{component.houseDesc}</p>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">{component.houseDesc}</p>
               </div>
             </div>
 
             {/* Desktop / Laptop toggle */}
-            <div className="flex border-b border-white/10">
+            <div className="flex border-b border-gray-200">
               {(["desktop", "laptop"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   className="flex-1 py-2 text-xs font-medium capitalize transition-colors"
                   style={{
-                    background: view === v ? component.color + "22" : "transparent",
-                    color: view === v ? component.color : "rgba(255,255,255,0.45)",
+                    background: view === v ? component.color + "15" : "transparent",
+                    color: view === v ? component.color : "rgba(0,0,0,0.45)",
                     borderBottom: view === v ? `2px solid ${component.color}` : "2px solid transparent",
                   }}
                 >
@@ -285,7 +282,7 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
             </div>
 
             {/* Placement info */}
-            <div className="p-4 flex flex-col gap-3">
+            <div className="p-4 flex flex-col gap-3 bg-white">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={view}
@@ -299,22 +296,22 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
                   <div className="flex items-start gap-2.5">
                     <span className="text-sm mt-0.5">📍</span>
                     <div>
-                      <p className="text-xs font-semibold text-white/80">Location</p>
-                      <p className="text-xs text-white/60 mt-0.5">{component[view].location}</p>
+                      <p className="text-xs font-semibold text-gray-700">Location</p>
+                      <p className="text-xs text-gray-600 mt-0.5">{component[view].location}</p>
                     </div>
                   </div>
                   {/* Slot */}
                   <div className="flex items-start gap-2.5">
                     <span className="text-sm mt-0.5">🔌</span>
                     <div>
-                      <p className="text-xs font-semibold text-white/80">Slot / Interface</p>
-                      <p className="text-xs text-white/60 mt-0.5">{component[view].slot}</p>
+                      <p className="text-xs font-semibold text-gray-700">Slot / Interface</p>
+                      <p className="text-xs text-gray-600 mt-0.5">{component[view].slot}</p>
                     </div>
                   </div>
                   {/* Note */}
                   <div
-                    className="rounded-lg px-3 py-2 text-xs"
-                    style={{ background: component.color + "15", color: component.color + "cc" }}
+                    className="rounded-lg px-3 py-2 text-xs font-medium"
+                    style={{ background: component.color + "12", color: component.color, border: `1px solid ${component.color}30` }}
                   >
                     💡 {component[view].note}
                   </div>
@@ -323,33 +320,33 @@ export default function PlacementGuide({ lessonId, accent = "#8B5CF6" }: Props) 
 
               {/* Heat & Power info */}
               <div className="grid grid-cols-2 gap-2 mt-1">
-                <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-3 py-2">
-                  <p className="text-xs font-semibold text-orange-400 mb-1">🌡️ Heat</p>
-                  <p className="text-xs text-white/55 leading-relaxed">{component.heatNote}</p>
+                <div className="rounded-lg bg-orange-50 border border-orange-200 px-3 py-2">
+                  <p className="text-xs font-semibold text-orange-600 mb-1">🌡️ Heat</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">{component.heatNote}</p>
                 </div>
-                <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-2">
-                  <p className="text-xs font-semibold text-yellow-400 mb-1">⚡ Power</p>
-                  <p className="text-xs text-white/55 leading-relaxed">{component.powerNote}</p>
+                <div className="rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2">
+                  <p className="text-xs font-semibold text-yellow-700 mb-1">⚡ Power</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">{component.powerNote}</p>
                 </div>
               </div>
 
               {/* Manufacturer variation note */}
-              <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white/40">
-                ⚠️ <span className="font-medium text-white/55">Slot positions vary by manufacturer.</span> Always check your specific motherboard or laptop manual — the number and location of slots differ between brands and models.
+              <div className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-500">
+                ⚠️ <span className="font-medium text-gray-600">Slot positions vary by manufacturer.</span> Always check your specific motherboard or laptop manual — the number and location of slots differ between brands and models.
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
         {/* Airflow & Power house analogy */}
-        <div className="rounded-lg border border-white/10 bg-white/5 p-3 flex flex-col gap-2">
-          <p className="text-xs font-semibold text-white/70">🌬️ Cooling = House AC / Fans</p>
-          <p className="text-xs text-white/50 leading-relaxed">
-            Just like a house uses ACs and exhaust fans to manage heat, a PC uses <span className="text-white/70">case fans</span> (front intake = fresh air in, rear/top exhaust = hot air out), a <span className="text-white/70">CPU cooler</span> (like a dedicated AC for the master bedroom), and <span className="text-white/70">GPU fans</span> (the workshop's industrial exhaust). Good airflow = cool PC = longer life.
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 flex flex-col gap-2">
+          <p className="text-xs font-semibold text-gray-700">🌬️ Cooling = House AC / Fans</p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Just like a house uses ACs and exhaust fans to manage heat, a PC uses <span className="font-medium text-gray-800">case fans</span> (front intake = fresh air in, rear/top exhaust = hot air out), a <span className="font-medium text-gray-800">CPU cooler</span> (like a dedicated AC for the master bedroom), and <span className="font-medium text-gray-800">GPU fans</span> (the workshop&apos;s industrial exhaust). Good airflow = cool PC = longer life.
           </p>
-          <p className="text-xs font-semibold text-white/70 mt-1">⚡ Power = House Electrical Wiring</p>
-          <p className="text-xs text-white/50 leading-relaxed">
-            The <span className="text-white/70">PSU (Power Supply Unit)</span> is the electrical panel of the house. Power cables run from it to every component — 24-pin ATX to the motherboard, 8-pin EPS to the CPU, PCIe cables to the GPU, SATA/Molex to drives. Each component is a room that needs its own power line.
+          <p className="text-xs font-semibold text-gray-700 mt-1">⚡ Power = House Electrical Wiring</p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            The <span className="font-medium text-gray-800">PSU (Power Supply Unit)</span> is the electrical panel of the house. Power cables run from it to every component — 24-pin ATX to the motherboard, 8-pin EPS to the CPU, PCIe cables to the GPU, SATA/Molex to drives. Each component is a room that needs its own power line.
           </p>
         </div>
       </div>
