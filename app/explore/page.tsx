@@ -42,6 +42,15 @@ const LESSON_BG: Record<string, { from: string; to: string }> = {
   "what-is-code":      { from: "#A5B4FC", to: "#4F46E5" },
   "python-intro":      { from: "#FDE68A", to: "#2563EB" },
   "scratch-intro":     { from: "#FCA5A5", to: "#FF6B35" },
+  // Engineering lab
+  "pc-hardware":       { from: "#C4B5FD", to: "#7C3AED" },
+  "internet-www":      { from: "#93C5FD", to: "#1D4ED8" },
+  "cyber-hygiene":     { from: "#6EE7B7", to: "#047857" },
+  "word-processing":   { from: "#FDE68A", to: "#B45309" },
+  "spreadsheets":      { from: "#6EE7B7", to: "#15803D" },
+  "presentations":     { from: "#F9A8D4", to: "#BE185D" },
+  "linux-os":          { from: "#6B7280", to: "#1F2937" },
+  "dual-boot":         { from: "#A5B4FC", to: "#4338CA" },
 };
 
 function ExploreContent() {

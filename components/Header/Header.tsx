@@ -19,6 +19,8 @@ export default function Header() {
 
   const navLinks = [
     { href: "/explore", label: "Explore", emoji: "🚀" },
+    { href: "/build-pc", label: "Build PC", emoji: "🖥️" },
+    { href: "/labs/cpu-internals", label: "CPU Lab", emoji: "⚡" },
     { href: "/quiz", label: "Quiz", emoji: "🧩" },
     { href: "/signature", label: "My Badge", emoji: "🏅" },
     { href: "/donate", label: "Donate", emoji: "❤️" },

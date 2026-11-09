@@ -26,7 +26,8 @@ export const AVATARS: Avatar[] = [
 export function getAgeGroup(age: number): AgeGroup {
   if (age <= 7) return "5-7";
   if (age <= 10) return "8-10";
-  return "11-14";
+  if (age <= 14) return "11-14";
+  return "15-18";
 }
 
 export const SESSION_KEY = "kidbyte_session";
@@ -87,5 +88,13 @@ export const CATEGORIES = [
     color: "#4CAF50",
     description: "Python, Scratch & how code works",
     lessons: ["what-is-code", "python-intro", "scratch-intro"],
+  },
+  {
+    id: "engineering",
+    label: "Engineering Lab",
+    emoji: "🎓",
+    color: "#7C3AED",
+    description: "1st Year CSE — PC Hardware, Networking, Office Tools",
+    lessons: ["pc-hardware", "internet-www", "word-processing", "spreadsheets", "presentations", "cyber-hygiene", "linux-os", "dual-boot"],
   },
 ];

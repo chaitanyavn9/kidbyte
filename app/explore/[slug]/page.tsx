@@ -24,5 +24,5 @@ export default async function LessonRoute({ params }: Props) {
   const { slug } = await params;
   const lesson = lessons[slug];
   if (!lesson) notFound();
-  return <LessonPage lesson={lesson} />;
+  return <LessonPage key={slug} lesson={lesson} />;
 }
