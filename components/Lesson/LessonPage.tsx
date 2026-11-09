@@ -14,6 +14,8 @@ import PixelAnimation from "@/components/animations/PixelAnimation";
 import DeviceAnimation from "@/components/animations/DeviceAnimation";
 import AnalogyAnimation from "@/components/animations/AnalogyAnimation";
 import PCComponentAnimation from "@/components/animations/PCComponentAnimation";
+import ArchitectureDiagram from "@/components/animations/ArchitectureDiagram";
+import PlacementGuide from "@/components/animations/PlacementGuide";
 
 /* ── Page-level background gradients per lesson ── */
 const PAGE_BG: Record<string, string> = {
@@ -121,11 +123,11 @@ const PC_PARTS_LESSONS = new Set([
   "cooling-fan", "battery", "rom", "pc-hardware",
 ]);
 
-/* Lessons that have the real-world analogy animation */
-const ANALOGY_LESSONS = new Set([
-  "cpu", "ram", "motherboard", "gpu", "ssd", "pc-hardware",
-  "internet-www", "linux-os", "cyber-hygiene",
-]);
+/* Lessons that show the architecture block diagram */
+const ARCH_LESSONS = new Set(["cpu", "gpu"]);
+
+/* Lessons that show the placement guide (hardware with physical slots) */
+const PLACEMENT_LESSONS = new Set(["cpu", "motherboard", "ram", "gpu", "ssd", "pc-hardware"]);
 
 const ANIMATION_MAP: Record<string, React.ComponentType> = {
   folder: FolderAnimation, cpu: CpuAnimation, ram: RamAnimation,
@@ -148,7 +150,8 @@ export default function LessonPage({ lesson }: Props) {
   const ageGroup: AgeGroup = session?.ageGroup ?? "8-10";
   const isEngineeringMode = ageGroup === "15-18";
   const showPCAnimation = isEngineeringMode && PC_PARTS_LESSONS.has(lesson.id);
-  const showAnalogyAnim = ANALOGY_LESSONS.has(lesson.id);
+  const showArchDiagram = isEngineeringMode && ARCH_LESSONS.has(lesson.id);
+  const showPlacement   = isEngineeringMode && PLACEMENT_LESSONS.has(lesson.id);
   const AnimComp = ANIMATION_MAP[lesson.id];
   const pageBg = PAGE_BG[lesson.id] ?? "from-blue-50 via-indigo-50 to-purple-50";
   const accent = ACCENT[lesson.id] ?? "#1D7CFF";
@@ -293,7 +296,8 @@ export default function LessonPage({ lesson }: Props) {
               accent={accent}
               isEngineeringMode={isEngineeringMode}
               showPCAnimation={showPCAnimation}
-              showAnalogyAnim={showAnalogyAnim}
+              showArchDiagram={showArchDiagram}
+              showPlacement={showPlacement}
               AnimComp={AnimComp}
             />
           </div>
@@ -410,7 +414,8 @@ export default function LessonPage({ lesson }: Props) {
             accent={accent}
             isEngineeringMode={isEngineeringMode}
             showPCAnimation={showPCAnimation}
-            showAnalogyAnim={showAnalogyAnim}
+            showArchDiagram={showArchDiagram}
+            showPlacement={showPlacement}
             AnimComp={AnimComp}
           />
         </aside>
@@ -420,14 +425,17 @@ export default function LessonPage({ lesson }: Props) {
   );
 }
 
-/* ─── Right panel: animation + internal layers ─── */
+/* ─── Right panel: multi-view with smart toggle ─── */
+type PanelView = "analogy" | "architecture" | "placement" | "layers";
+
 function RightPanel({
   lesson,
   ageGroup,
   accent,
   isEngineeringMode,
   showPCAnimation,
-  showAnalogyAnim,
+  showArchDiagram,
+  showPlacement,
   AnimComp,
 }: {
   lesson: Lesson;
@@ -435,41 +443,52 @@ function RightPanel({
   accent: string;
   isEngineeringMode: boolean;
   showPCAnimation: boolean;
-  showAnalogyAnim: boolean;
+  showArchDiagram: boolean;
+  showPlacement: boolean;
   AnimComp?: React.ComponentType;
 }) {
-  const [view, setView] = useState<"analogy" | "layers">("analogy");
+  const [view, setView] = useState<PanelView>("analogy");
+
+  /* Build the list of available views for this lesson */
+  const views: { id: PanelView; label: string }[] = [
+    { id: "analogy",      label: "🎓 How It Works" },
+    ...(showArchDiagram   ? [{ id: "architecture" as PanelView, label: "📐 Architecture" }] : []),
+    ...(showPlacement     ? [{ id: "placement"    as PanelView, label: "🏠 Placement" }]    : []),
+    ...(showPCAnimation   ? [{ id: "layers"       as PanelView, label: "🔬 Layers" }]       : []),
+  ];
 
   return (
     <div className="flex flex-col gap-4">
 
-      {/* View toggle for engineering mode PC parts */}
-      {isEngineeringMode && showPCAnimation && showAnalogyAnim && (
+      {/* Toggle bar — shown when there are multiple views */}
+      {views.length > 1 && (
         <div className="flex rounded-xl p-1 gap-1" style={{ background: "rgba(0,0,0,0.06)" }}>
-          {(["analogy", "layers"] as const).map((v) => (
+          {views.map((v) => (
             <button
-              key={v}
-              onClick={() => setView(v)}
-              className="flex-1 py-1.5 rounded-lg text-xs font-black capitalize transition-all"
+              key={v.id}
+              onClick={() => setView(v.id)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-black transition-all leading-tight text-center"
               style={{
-                background: view === v ? "#0F172A" : "transparent",
-                color: view === v ? "white" : "#64748B",
+                background: view === v.id ? "#0F172A" : "transparent",
+                color: view === v.id ? "white" : "#64748B",
               }}
             >
-              {v === "analogy" ? "🎓 How It Works" : "🔬 Layer View"}
+              {v.label}
             </button>
           ))}
         </div>
       )}
 
-      {/* Analogy animation (default view) */}
+      {/* Panel content */}
       <AnimatePresence mode="wait">
-        {(!isEngineeringMode || !showPCAnimation || view === "analogy") && showAnalogyAnim && (
+
+        {view === "analogy" && (
           <motion.div
             key="analogy"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2 }}
             className="rounded-2xl overflow-hidden shadow-lg"
             style={{ minHeight: 320 }}
           >
@@ -477,23 +496,50 @@ function RightPanel({
           </motion.div>
         )}
 
-        {/* Layer/explode view for engineering mode PC parts */}
-        {isEngineeringMode && showPCAnimation && view === "layers" && (
+        {view === "architecture" && showArchDiagram && (
+          <motion.div
+            key="architecture"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-2xl overflow-hidden shadow-lg"
+          >
+            <ArchitectureDiagram lessonId={lesson.id} />
+          </motion.div>
+        )}
+
+        {view === "placement" && showPlacement && (
+          <motion.div
+            key="placement"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-2xl overflow-hidden shadow-lg"
+          >
+            <PlacementGuide lessonId={lesson.id} accent={accent} />
+          </motion.div>
+        )}
+
+        {view === "layers" && showPCAnimation && (
           <motion.div
             key="layers"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2 }}
             className="rounded-2xl overflow-hidden shadow-lg"
           >
             <PCComponentAnimation lessonId={lesson.id} />
           </motion.div>
         )}
 
-        {/* Legacy animations for non-PC lessons */}
-        {!showAnalogyAnim && AnimComp && (
+        {/* Legacy animations for lessons without analogy scenes and not in engineering mode */}
+        {view === "analogy" && !isEngineeringMode && !AnimComp && null}
+        {view === "analogy" && AnimComp && lesson.id in { folder:1, cpu:0, ram:0, binary:1, pixels:1, computer:1, laptop:1, tablet:1, phone:1 } && !isEngineeringMode && (
           <motion.div
-            key="anim"
+            key="legacy"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -502,19 +548,8 @@ function RightPanel({
             <AnimComp />
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* Analogy for non-PC hardware in engineering mode */}
-      {isEngineeringMode && showPCAnimation && view === "analogy" && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-xs text-center"
-          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
-        >
-          <span className="text-purple-500 font-bold">Switch to Layer View →</span> to see the exploded component diagram
-        </motion.div>
-      )}
+      </AnimatePresence>
 
     </div>
   );
