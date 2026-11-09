@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { useSession } from "@/hooks/useSession";
 import { Lesson, AgeGroup } from "@/lib/types";
 import QuizComponent from "@/components/Quiz/QuizComponent";
@@ -11,6 +12,7 @@ import RamAnimation from "@/components/animations/RamAnimation";
 import BinaryAnimation from "@/components/animations/BinaryAnimation";
 import PixelAnimation from "@/components/animations/PixelAnimation";
 import DeviceAnimation from "@/components/animations/DeviceAnimation";
+import AnalogyAnimation from "@/components/animations/AnalogyAnimation";
 import PCComponentAnimation from "@/components/animations/PCComponentAnimation";
 
 /* ── Page-level background gradients per lesson ── */
@@ -56,7 +58,6 @@ const PAGE_BG: Record<string, string> = {
   "dual-boot":        "from-indigo-50 via-violet-50 to-purple-50",
 };
 
-/* ── Accent colours for tab highlight per lesson ── */
 const ACCENT: Record<string, string> = {
   folder:"#F59E0B", cpu:"#3B82F6", ram:"#7C3AED", binary:"#059669", pixels:"#EC4899",
   computer:"#1D7CFF", laptop:"#7B61FF", tablet:"#FF8A00", phone:"#FF4081",
@@ -72,23 +73,67 @@ const ACCENT: Record<string, string> = {
   "linux-os":"#374151", "dual-boot":"#4338CA",
 };
 
-function DeviceAnimationWrapper({ lessonId }: { lessonId: string }) {
-  return <DeviceAnimation lessonId={lessonId} />;
+/* Sidebar sections per lesson */
+interface Section { id: string; label: string; emoji: string; tab: "story" | "explore" | "quiz" }
+const SECTIONS: Record<string, Section[]> = {
+  cpu: [
+    { id: "what",    label: "What is a CPU?",        emoji: "🧠", tab: "story" },
+    { id: "how",     label: "How it works",           emoji: "⚙️", tab: "explore" },
+    { id: "layers",  label: "Inside the CPU",         emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+  ram: [
+    { id: "what",    label: "What is RAM?",           emoji: "💾", tab: "story" },
+    { id: "how",     label: "How RAM works",          emoji: "⚡", tab: "explore" },
+    { id: "layers",  label: "Inside the stick",       emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+  motherboard: [
+    { id: "what",    label: "What is a Motherboard?", emoji: "🟩", tab: "story" },
+    { id: "how",     label: "How it connects",        emoji: "🔌", tab: "explore" },
+    { id: "layers",  label: "PCB layers",             emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+  gpu: [
+    { id: "what",    label: "What is a GPU?",         emoji: "🎮", tab: "story" },
+    { id: "how",     label: "How rendering works",    emoji: "🖼️", tab: "explore" },
+    { id: "layers",  label: "GPU anatomy",            emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+  ssd: [
+    { id: "what",    label: "What is an SSD?",        emoji: "⚡", tab: "story" },
+    { id: "how",     label: "How flash works",        emoji: "💡", tab: "explore" },
+    { id: "layers",  label: "SSD internals",          emoji: "🔬", tab: "explore" },
+    { id: "quiz",    label: "Test your knowledge",    emoji: "🧩", tab: "quiz" },
+  ],
+};
+
+function getDefaultSections(lesson: Lesson): Section[] {
+  return SECTIONS[lesson.id] ?? [
+    { id: "what",  label: lesson.title,          emoji: lesson.emoji, tab: "story"   },
+    { id: "how",   label: "See it in action",    emoji: "🔬",         tab: "explore" },
+    { id: "quiz",  label: "Test your knowledge", emoji: "🧩",         tab: "quiz"    },
+  ];
 }
 
-/* PC parts that get the engineering open-PC animation */
 const PC_PARTS_LESSONS = new Set([
-  "cpu", "motherboard", "ram", "gpu", "ssd", "hard-disk", "ssd-deep", "cooling-fan", "battery", "rom",
-  "pc-hardware",
+  "cpu", "motherboard", "ram", "gpu", "ssd", "hard-disk", "ssd-deep",
+  "cooling-fan", "battery", "rom", "pc-hardware",
+]);
+
+/* Lessons that have the real-world analogy animation */
+const ANALOGY_LESSONS = new Set([
+  "cpu", "ram", "motherboard", "gpu", "ssd", "pc-hardware",
+  "internet-www", "linux-os", "cyber-hygiene",
 ]);
 
 const ANIMATION_MAP: Record<string, React.ComponentType> = {
   folder: FolderAnimation, cpu: CpuAnimation, ram: RamAnimation,
   binary: BinaryAnimation, pixels: PixelAnimation,
-  computer: () => <DeviceAnimationWrapper lessonId="computer" />,
-  laptop:   () => <DeviceAnimationWrapper lessonId="laptop" />,
-  tablet:   () => <DeviceAnimationWrapper lessonId="tablet" />,
-  phone:    () => <DeviceAnimationWrapper lessonId="phone" />,
+  computer: () => <DeviceAnimation lessonId="computer" />,
+  laptop:   () => <DeviceAnimation lessonId="laptop" />,
+  tablet:   () => <DeviceAnimation lessonId="tablet" />,
+  phone:    () => <DeviceAnimation lessonId="phone" />,
 };
 
 type Tab = "story" | "explore" | "quiz";
@@ -98,246 +143,379 @@ interface Props { lesson: Lesson; }
 export default function LessonPage({ lesson }: Props) {
   const { session, markLessonVisited } = useSession();
   const [tab, setTab] = useState<Tab>("story");
+  const [activeSection, setActiveSection] = useState("what");
 
   const ageGroup: AgeGroup = session?.ageGroup ?? "8-10";
   const isEngineeringMode = ageGroup === "15-18";
   const showPCAnimation = isEngineeringMode && PC_PARTS_LESSONS.has(lesson.id);
+  const showAnalogyAnim = ANALOGY_LESSONS.has(lesson.id);
   const AnimComp = ANIMATION_MAP[lesson.id];
   const pageBg = PAGE_BG[lesson.id] ?? "from-blue-50 via-indigo-50 to-purple-50";
   const accent = ACCENT[lesson.id] ?? "#1D7CFF";
+  const sections = getDefaultSections(lesson);
 
   useEffect(() => { markLessonVisited(lesson.id); }, [lesson.id, markLessonVisited]);
 
-  const tabs: { id: Tab; label: string; emoji: string }[] = [
-    { id: "story",   label: "Story",   emoji: "📖" },
-    { id: "explore", label: "Explore", emoji: "🔬" },
-    { id: "quiz",    label: "Quiz",    emoji: "🧩" },
-  ];
+  function handleSection(s: Section) {
+    setActiveSection(s.id);
+    setTab(s.tab);
+  }
+
+  const avatarEmoji = session?.avatar === "robot" ? "🤖"
+    : session?.avatar === "astronaut" ? "👨‍🚀"
+    : session?.avatar === "scientist" ? "🧑‍🔬"
+    : session?.avatar === "artist" ? "🧑‍🎨"
+    : session?.avatar === "ninja" ? "🥷"
+    : "🦸";
 
   return (
-    /* ── Animated page background ── */
-    <div className={`min-h-screen bg-gradient-to-br ${pageBg} relative overflow-hidden`}>
+    <div className={`min-h-screen bg-gradient-to-br ${pageBg}`}>
 
-      {/* Drifting background particles */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 60 + i * 30,
-            height: 60 + i * 30,
-            background: accent,
-            opacity: 0.04,
-            left: `${5 + i * 16}%`,
-            top: `${10 + (i % 3) * 25}%`,
-          }}
-          animate={{ y: [0, -30, 0], x: [0, 15, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 6 + i, repeat: Infinity, delay: i * 0.8, ease: "easeInOut" }}
-        />
-      ))}
-
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-8">
-
-        {/* ── Lesson Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-7"
-        >
-          {/* Bouncing big emoji */}
-          <motion.div
-            className="inline-block text-7xl mb-3 drop-shadow-md"
-            animate={{ y: [0, -10, 0], rotate: [0, -5, 5, 0] }}
-            transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
-          >
-            {lesson.emoji}
-          </motion.div>
-          <h1 className="text-3xl font-black" style={{ color: "#082A63" }}>{lesson.title}</h1>
-          {session && (
-            <div
-              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold text-white"
-              style={{ background: accent }}
-            >
-              <span>
-                {session.avatar === "robot" ? "🤖" : session.avatar === "astronaut" ? "👨‍🚀" :
-                 session.avatar === "scientist" ? "🧑‍🔬" : session.avatar === "artist" ? "🧑‍🎨" :
-                 session.avatar === "ninja" ? "🥷" : "🦸"}
-              </span>
-              <span>{session.name} · Age {session.age} · {ageGroup} level</span>
-            </div>
-          )}
-        </motion.div>
-
-        {/* ── Tab Bar ── */}
-        <div className="flex bg-white/70 backdrop-blur-sm rounded-2xl p-1.5 mb-6 gap-1 shadow-sm">
-          {tabs.map((t) => (
-            <motion.button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm transition-all"
-              style={{
-                background: tab === t.id ? accent : "transparent",
-                color: tab === t.id ? "white" : "#94A3B8",
-                boxShadow: tab === t.id ? `0 4px 12px ${accent}40` : "none",
-              }}
-            >
-              <span>{t.emoji}</span>
-              <span>{t.label}</span>
-            </motion.button>
-          ))}
-        </div>
-
-        {/* ── Tab Content ── */}
-        <AnimatePresence mode="wait">
-
-          {/* ────── STORY TAB ────── */}
-          {tab === "story" && (
+      {/* ── Top hero banner ── */}
+      <div
+        className="w-full py-6 px-6"
+        style={{ background: `linear-gradient(135deg, ${accent}22, ${accent}08)`, borderBottom: `1px solid ${accent}20` }}
+      >
+        <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
             <motion.div
-              key="story"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
+              className="text-5xl drop-shadow-md"
+              animate={{ y: [0, -6, 0], rotate: [0, -4, 4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
             >
-              <StoryViewer
-                lesson={lesson}
-                ageGroup={ageGroup}
-                onContinue={() => setTab("explore")}
-              />
+              {lesson.emoji}
             </motion.div>
-          )}
-
-          {/* ────── EXPLORE TAB ────── */}
-          {tab === "explore" && (
-            <motion.div
-              key="explore"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-              className="flex flex-col gap-5"
-            >
-              {/* Engineering mode badge */}
-              {isEngineeringMode && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl px-4 py-2.5 flex items-center gap-2"
-                >
-                  <span className="text-xl">🎓</span>
-                  <div>
-                    <p className="text-white font-black text-sm">Engineering Mode</p>
-                    <p className="text-purple-200 text-xs">1st Year CSE depth — full technical explanation</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Interactive animation panel */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-white overflow-hidden">
-                {showPCAnimation ? (
-                  <PCComponentAnimation lessonId={lesson.id} />
-                ) : AnimComp ? (
-                  <AnimComp />
-                ) : (
-                  <div className="p-14 text-center">
-                    <motion.span
-                      className="text-6xl block mb-3"
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      🚧
-                    </motion.span>
-                    <p className="font-bold text-gray-400">Interactive demo coming soon!</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Do's and Don'ts */}
-              {(lesson.dos || lesson.donts) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {lesson.dos && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="bg-white/80 backdrop-blur rounded-2xl p-5 border-2 border-green-200"
-                    >
-                      <p className="font-black text-green-700 mb-3 flex items-center gap-2">
-                        <span className="text-xl">✅</span> Do&apos;s
-                      </p>
-                      <ul className="flex flex-col gap-2">
-                        {lesson.dos.map((d, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 + i * 0.08 }}
-                            className="text-sm text-green-800 flex gap-2"
-                          >
-                            <span className="text-green-400 mt-0.5">▸</span> {d}
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  )}
-                  {lesson.donts && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 }}
-                      className="bg-white/80 backdrop-blur rounded-2xl p-5 border-2 border-red-200"
-                    >
-                      <p className="font-black text-red-700 mb-3 flex items-center gap-2">
-                        <span className="text-xl">❌</span> Don&apos;ts
-                      </p>
-                      <ul className="flex flex-col gap-2">
-                        {lesson.donts.map((d, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.15 + i * 0.08 }}
-                            className="text-sm text-red-800 flex gap-2"
-                          >
-                            <span className="text-red-400 mt-0.5">▸</span> {d}
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-black" style={{ color: "#082A63" }}>{lesson.title}</h1>
+              {session && (
+                <div className="flex items-center gap-2 mt-1">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-white"
+                    style={{ background: accent }}
+                  >
+                    {avatarEmoji} {session.name} · Age {session.age} · {ageGroup}
+                  </span>
+                  {isEngineeringMode && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black text-white bg-purple-600">
+                      🎓 Engineering Mode
+                    </span>
                   )}
                 </div>
               )}
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setTab("quiz")}
-                className="btn-shine w-full text-white font-black text-lg py-4 rounded-2xl shadow-lg"
-                style={{ background: `linear-gradient(90deg, ${accent}, #7B61FF)` }}
-              >
-                Take the Quiz! 🧩
-              </motion.button>
-            </motion.div>
-          )}
-
-          {/* ────── QUIZ TAB ────── */}
-          {tab === "quiz" && (
-            <motion.div
-              key="quiz"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
+            </div>
+          </div>
+          <Link href="/explore">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              className="px-4 py-2 rounded-xl font-black text-sm"
+              style={{ background: `${accent}18`, color: accent, border: `1.5px solid ${accent}40` }}
             >
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-1 shadow-lg border border-white">
-                <QuizComponent lesson={lesson} ageGroup={ageGroup} onDone={() => {}} />
-              </div>
-            </motion.div>
-          )}
-
-        </AnimatePresence>
+              ← All Lessons
+            </motion.button>
+          </Link>
+        </div>
       </div>
+
+      {/* ── 3-column main layout ── */}
+      <div className="max-w-screen-xl mx-auto px-4 py-6 flex gap-5 items-start">
+
+        {/* ── LEFT SIDEBAR ── */}
+        <aside className="hidden lg:flex flex-col gap-1 w-56 shrink-0 sticky top-24">
+          <p className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 mb-2">
+            Sections
+          </p>
+          {sections.map((s) => {
+            const isActive = activeSection === s.id;
+            return (
+              <motion.button
+                key={s.id}
+                whileHover={{ x: 3 }}
+                onClick={() => handleSection(s)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all"
+                style={{
+                  background: isActive ? `${accent}18` : "transparent",
+                  borderLeft: `3px solid ${isActive ? accent : "transparent"}`,
+                }}
+              >
+                <span className="text-lg">{s.emoji}</span>
+                <span
+                  className="text-sm font-bold leading-tight"
+                  style={{ color: isActive ? accent : "#64748B" }}
+                >
+                  {s.label}
+                </span>
+              </motion.button>
+            );
+          })}
+
+          {/* Fun fact box */}
+          {lesson.funFact && (
+            <div
+              className="mt-4 rounded-2xl p-4"
+              style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}
+            >
+              <p className="text-xs font-black mb-1" style={{ color: accent }}>💡 Fun Fact</p>
+              <p className="text-xs text-gray-600 leading-relaxed">{lesson.funFact}</p>
+            </div>
+          )}
+        </aside>
+
+        {/* ── CENTER CONTENT ── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-5">
+
+          {/* Tab bar */}
+          <div
+            className="flex rounded-2xl p-1.5 gap-1 shadow-sm"
+            style={{ background: "rgba(255,255,255,0.75)", backdropFilter: "blur(12px)" }}
+          >
+            {(["story", "explore", "quiz"] as Tab[]).map((t) => (
+              <motion.button
+                key={t}
+                onClick={() => setTab(t)}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm capitalize"
+                style={{
+                  background: tab === t ? accent : "transparent",
+                  color: tab === t ? "white" : "#94A3B8",
+                  boxShadow: tab === t ? `0 4px 12px ${accent}40` : "none",
+                }}
+              >
+                {t === "story" ? "📖" : t === "explore" ? "🔬" : "🧩"} {t.charAt(0).toUpperCase() + t.slice(1)}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Mobile: show analogy animation inline above content */}
+          <div className="lg:hidden">
+            <RightPanel
+              lesson={lesson}
+              ageGroup={ageGroup}
+              accent={accent}
+              isEngineeringMode={isEngineeringMode}
+              showPCAnimation={showPCAnimation}
+              showAnalogyAnim={showAnalogyAnim}
+              AnimComp={AnimComp}
+            />
+          </div>
+
+          {/* Tab content */}
+          <AnimatePresence mode="wait">
+
+            {tab === "story" && (
+              <motion.div
+                key="story"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/80 overflow-hidden"
+              >
+                <StoryViewer
+                  lesson={lesson}
+                  ageGroup={ageGroup}
+                  onContinue={() => { setTab("explore"); setActiveSection("how"); }}
+                />
+              </motion.div>
+            )}
+
+            {tab === "explore" && (
+              <motion.div
+                key="explore"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col gap-4"
+              >
+                {/* Do's and Don'ts */}
+                {(lesson.dos || lesson.donts) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {lesson.dos && (
+                      <div className="bg-white/80 backdrop-blur rounded-2xl p-5 border-2 border-green-100">
+                        <p className="font-black text-green-700 mb-3 flex items-center gap-2">
+                          <span>✅</span> Good Practices
+                        </p>
+                        <ul className="flex flex-col gap-2">
+                          {lesson.dos.map((d, i) => (
+                            <motion.li
+                              key={i}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.07 }}
+                              className="text-sm text-green-800 flex gap-2"
+                            >
+                              <span className="text-green-400 mt-0.5 shrink-0">▸</span> {d}
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {lesson.donts && (
+                      <div className="bg-white/80 backdrop-blur rounded-2xl p-5 border-2 border-red-100">
+                        <p className="font-black text-red-700 mb-3 flex items-center gap-2">
+                          <span>❌</span> Watch Out For
+                        </p>
+                        <ul className="flex flex-col gap-2">
+                          {lesson.donts.map((d, i) => (
+                            <motion.li
+                              key={i}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.07 }}
+                              className="text-sm text-red-800 flex gap-2"
+                            >
+                              <span className="text-red-400 mt-0.5 shrink-0">▸</span> {d}
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { setTab("quiz"); setActiveSection("quiz"); }}
+                  className="w-full text-white font-black text-lg py-4 rounded-2xl shadow-lg"
+                  style={{ background: `linear-gradient(90deg, ${accent}, #7B61FF)` }}
+                >
+                  Take the Quiz! 🧩
+                </motion.button>
+              </motion.div>
+            )}
+
+            {tab === "quiz" && (
+              <motion.div
+                key="quiz"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-1 shadow-sm border border-white/80">
+                  <QuizComponent lesson={lesson} ageGroup={ageGroup} onDone={() => {}} />
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+
+        {/* ── RIGHT PANEL (desktop only) ── */}
+        <aside className="hidden lg:block w-80 xl:w-96 shrink-0 sticky top-24">
+          <RightPanel
+            lesson={lesson}
+            ageGroup={ageGroup}
+            accent={accent}
+            isEngineeringMode={isEngineeringMode}
+            showPCAnimation={showPCAnimation}
+            showAnalogyAnim={showAnalogyAnim}
+            AnimComp={AnimComp}
+          />
+        </aside>
+
+      </div>
+    </div>
+  );
+}
+
+/* ─── Right panel: animation + internal layers ─── */
+function RightPanel({
+  lesson,
+  ageGroup,
+  accent,
+  isEngineeringMode,
+  showPCAnimation,
+  showAnalogyAnim,
+  AnimComp,
+}: {
+  lesson: Lesson;
+  ageGroup: AgeGroup;
+  accent: string;
+  isEngineeringMode: boolean;
+  showPCAnimation: boolean;
+  showAnalogyAnim: boolean;
+  AnimComp?: React.ComponentType;
+}) {
+  const [view, setView] = useState<"analogy" | "layers">("analogy");
+
+  return (
+    <div className="flex flex-col gap-4">
+
+      {/* View toggle for engineering mode PC parts */}
+      {isEngineeringMode && showPCAnimation && showAnalogyAnim && (
+        <div className="flex rounded-xl p-1 gap-1" style={{ background: "rgba(0,0,0,0.06)" }}>
+          {(["analogy", "layers"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-black capitalize transition-all"
+              style={{
+                background: view === v ? "#0F172A" : "transparent",
+                color: view === v ? "white" : "#64748B",
+              }}
+            >
+              {v === "analogy" ? "🎓 How It Works" : "🔬 Layer View"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Analogy animation (default view) */}
+      <AnimatePresence mode="wait">
+        {(!isEngineeringMode || !showPCAnimation || view === "analogy") && showAnalogyAnim && (
+          <motion.div
+            key="analogy"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            className="rounded-2xl overflow-hidden shadow-lg"
+            style={{ minHeight: 320 }}
+          >
+            <AnalogyAnimation lessonId={lesson.id} accent={accent} />
+          </motion.div>
+        )}
+
+        {/* Layer/explode view for engineering mode PC parts */}
+        {isEngineeringMode && showPCAnimation && view === "layers" && (
+          <motion.div
+            key="layers"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            className="rounded-2xl overflow-hidden shadow-lg"
+          >
+            <PCComponentAnimation lessonId={lesson.id} />
+          </motion.div>
+        )}
+
+        {/* Legacy animations for non-PC lessons */}
+        {!showAnalogyAnim && AnimComp && (
+          <motion.div
+            key="anim"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-white/80 rounded-2xl shadow-lg overflow-hidden"
+          >
+            <AnimComp />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Analogy for non-PC hardware in engineering mode */}
+      {isEngineeringMode && showPCAnimation && view === "analogy" && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-4 text-xs text-center"
+          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
+        >
+          <span className="text-purple-500 font-bold">Switch to Layer View →</span> to see the exploded component diagram
+        </motion.div>
+      )}
+
     </div>
   );
 }
