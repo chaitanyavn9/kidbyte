@@ -25,6 +25,16 @@ const lesson: Lesson = {
     "15-18":
       "RAM is like a leaky whiteboard — it needs an eraser-and-rewrite every few milliseconds (refresh) just to keep data alive, but it's so fast that this overhead is worth it compared to the alternative of going to storage.",
   },
+  photo: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=700&fit=crop",
+  photoAlt: "DDR4 RAM memory sticks on a motherboard",
+  keyFacts: [
+    { emoji: "🔢", label: "Full Name", value: "Random Access Memory", detail: "Any byte can be read in the same time — there's no 'seeking' like a hard disk." },
+    { emoji: "⚡", label: "Speed", value: "DDR5: 4800–8400 MT/s", detail: "Transfers data on both rising and falling clock edges (Double Data Rate)." },
+    { emoji: "💾", label: "Size", value: "8–64 GB (typical PC)", detail: "Each GB holds about 1 billion characters. 16 GB can hold 3 million pages of text in memory at once." },
+    { emoji: "🔌", label: "Desktop Slot", value: "DIMM — 288-pin DDR5 slot", detail: "Long stick with notch preventing backwards insertion. 2 or 4 slots on most motherboards." },
+    { emoji: "💻", label: "Laptop Slot", value: "SO-DIMM (smaller) or soldered", detail: "Many modern laptops solder RAM directly — cannot be upgraded." },
+    { emoji: "🧹", label: "Volatile", value: "Erases when power is off", detail: "Unlike an SSD, RAM has no permanent storage — switching off loses everything instantly." },
+  ],
   funFact:
     "The first RAM chip was invented in 1966. Today, a modern computer has up to 192GB of RAM — enough to store 40 million pages of text!",
   dos: [

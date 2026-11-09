@@ -24,6 +24,16 @@ const lesson: Lesson = {
     "15-18":
       "An out-of-order superscalar processor is like a world-class kitchen with multiple chefs (cores), each reading ahead in the recipe (branch prediction), preparing ingredients early (speculative execution), and plating dishes in correct order even if cooked out of sequence (reorder buffer).",
   },
+  photo: "https://images.unsplash.com/photo-1555617981-dac3772e4783?w=700&fit=crop",
+  photoAlt: "Close-up of a modern CPU processor chip on a circuit board",
+  keyFacts: [
+    { emoji: "🔢", label: "Full Name", value: "Central Processing Unit", detail: "The 'central' brain that every instruction in the computer must pass through." },
+    { emoji: "⚡", label: "Speed", value: "3–6 GHz (billion cycles/second)", detail: "A 3 GHz CPU completes 3,000,000,000 tiny steps every single second." },
+    { emoji: "🧩", label: "Cores", value: "4–24 cores (consumer CPUs)", detail: "Each core is an independent processor. More cores = more tasks at once." },
+    { emoji: "🏭", label: "Size", value: "3–7 nanometre transistors", detail: "Modern CPUs pack 100+ billion transistors into a chip the size of a thumbnail." },
+    { emoji: "📍", label: "Socket", value: "LGA 1700 (Intel) / AM5 (AMD)", detail: "The CPU sits in a socket on the motherboard — desktop CPUs can be replaced, laptop ones are usually soldered." },
+    { emoji: "🌡️", label: "Heat", value: "Up to 100°C under full load", detail: "Needs a heatsink + fan or liquid cooler to stay below the thermal limit." },
+  ],
   funFact:
     "The first commercial CPU, the Intel 4004, was released in 1971 and had just 2,300 transistors. Today's CPUs have over 100 billion transistors!",
   dos: [

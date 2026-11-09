@@ -18,6 +18,13 @@ export interface QuizQuestion {
   explanation?: string;
 }
 
+export interface KeyFact {
+  emoji: string;
+  label: string;
+  value: string;
+  detail?: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -26,6 +33,9 @@ export interface Lesson {
   story: Partial<Record<AgeGroup, string>>;
   analogy: Partial<Record<AgeGroup, string>>;
   funFact?: string;
+  photo?: string;       // real component image URL
+  photoAlt?: string;
+  keyFacts?: KeyFact[]; // shown in Explore tab
   dos?: string[];
   donts?: string[];
   quiz: QuizQuestion[];

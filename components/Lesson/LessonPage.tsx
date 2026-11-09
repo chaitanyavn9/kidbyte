@@ -16,6 +16,7 @@ import AnalogyAnimation from "@/components/animations/AnalogyAnimation";
 import PCComponentAnimation from "@/components/animations/PCComponentAnimation";
 import ArchitectureDiagram from "@/components/animations/ArchitectureDiagram";
 import PlacementGuide from "@/components/animations/PlacementGuide";
+import SlotGame from "@/components/Explore/SlotGame";
 
 /* ── Page-level background gradients per lesson ── */
 const PAGE_BG: Record<string, string> = {
@@ -329,8 +330,66 @@ export default function LessonPage({ lesson }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.25 }}
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-5"
               >
+                {/* Real photo + caption */}
+                {lesson.photo && (
+                  <div className="rounded-2xl overflow-hidden shadow-lg relative">
+                    <img
+                      src={lesson.photo}
+                      alt={lesson.photoAlt ?? lesson.title}
+                      className="w-full h-52 object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <div
+                      className="absolute bottom-0 left-0 right-0 px-4 py-2 text-xs text-white/80 font-medium"
+                      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                    >
+                      📸 {lesson.photoAlt ?? lesson.title}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key facts grid */}
+                {lesson.keyFacts && lesson.keyFacts.length > 0 && (
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accent }}>
+                      📊 Key Facts
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {lesson.keyFacts.map((fact, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          className="rounded-xl p-3.5 flex gap-3 items-start"
+                          style={{ background: `${accent}10`, border: `1px solid ${accent}25` }}
+                        >
+                          <span className="text-xl mt-0.5 shrink-0">{fact.emoji}</span>
+                          <div>
+                            <p className="text-xs font-black text-gray-700">{fact.label}</p>
+                            <p className="text-sm font-bold mt-0.5" style={{ color: accent }}>{fact.value}</p>
+                            {fact.detail && (
+                              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{fact.detail}</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Drag-to-slot PC builder game — PC hardware / motherboard lessons */}
+                {PC_PARTS_LESSONS.has(lesson.id) && (
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accent }}>
+                      🎮 Interactive: Build the PC
+                    </p>
+                    <SlotGame />
+                  </div>
+                )}
+
                 {/* Do's and Don'ts */}
                 {(lesson.dos || lesson.donts) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

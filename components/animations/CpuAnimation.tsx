@@ -28,7 +28,7 @@ export default function CpuAnimation() {
           const pos = polarToXY(sig.angle, 100);
           const mid = polarToXY(sig.angle, 55);
           return (
-            <g key={sig.label}>
+            <div key={sig.label} style={{ display: "contents" }}>
               {/* Animated pulse along the line */}
               <motion.div
                 className="absolute w-3 h-3 rounded-full"
@@ -79,7 +79,7 @@ export default function CpuAnimation() {
                   transform: `rotate(${sig.angle}deg) translateX(-50%)`,
                 }}
               />
-            </g>
+            </div>
           );
         })}
 
