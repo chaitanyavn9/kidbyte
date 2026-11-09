@@ -185,10 +185,10 @@ export default function SignaturePage() {
           </div>
           <div>
             <h2 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>{session.name}</h2>
-            <p style={{ color: "#93C5FD", fontSize: 13, margin: "4px 0 0" }}>
+            <p style={{ color: "#93C5FD", fontSize: 15, margin: "4px 0 0" }}>
               Age: {session.age} · {session.ageGroup} level
             </p>
-            <p style={{ color: "#60A5FA", fontSize: 12, margin: "4px 0 0" }}>
+            <p style={{ color: "#60A5FA", fontSize: 14, margin: "4px 0 0" }}>
               🎓 {session.visitedLessons.length} lesson{session.visitedLessons.length !== 1 ? "s" : ""} explored
             </p>
           </div>

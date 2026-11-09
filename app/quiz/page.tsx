@@ -85,7 +85,7 @@ export default function QuizPage() {
               <div className="text-4xl mb-2">{lesson.emoji}</div>
               <p className="font-black text-sm text-[#082A63] leading-tight">{lesson.title}</p>
               {!hasQuiz && (
-                <p className="text-[10px] text-gray-400 mt-1">No questions for your age yet</p>
+                <p className="text-xs text-gray-400 mt-1">No questions for your age yet</p>
               )}
             </motion.button>
           );
