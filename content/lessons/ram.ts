@@ -5,6 +5,33 @@ const lesson: Lesson = {
   title: "What is RAM?",
   emoji: "📚",
   category: "components",
+  narrative: {
+    "5-7": [
+      { heading: "Imagine you're doing your homework…", text: "You take out your books from the cupboard and spread them on your desk. While you work, everything you need is right there in front of you — easy to reach. But when you're done and close the books, the desk is completely clear. RAM is exactly that desk." },
+      { heading: "Why does the computer need a desk?", text: "Without a desk (RAM), every time the CPU needed something it would have to walk all the way to the cupboard (storage) and back. That would be very, very slow — like looking up every word in a dictionary instead of remembering it." },
+      { heading: "RAM = your computer's working surface", text: "When you open an app or a game, it jumps from the cupboard (SSD) onto the desk (RAM). The CPU can grab things from the desk in a flash. The more desk space you have, the more apps you can keep open at once.", diagramId: "ram-workspace" },
+      { heading: "What happens when you switch off?", text: "The desk clears completely. That's why you must save your work before turning off — saving moves it back into the cupboard (SSD) where it stays safe. RAM only holds things while the power is on.", diagramId: "ram-vs-ssd" },
+      { heading: "In your daily life…", text: "More RAM = your computer can keep more apps open without slowing down. 8 GB is good for school work. 16 GB is great for gaming. Tablets and phones have smaller RAM (4–8 GB) because mobile apps are lighter." },
+    ],
+    "8-10": [
+      { heading: "What if the CPU had to go to storage every time?", text: "SSDs are fast, but RAM is 100× faster. If programs lived only on the SSD, every calculation would involve a slow trip to storage. RAM solves this by holding the active data much closer to the processor." },
+      { heading: "RAM is temporary — that's the design", text: "RAM is called volatile memory: it loses all data the moment power is cut. This is a feature, not a bug — it means the computer starts fresh each time and old data never gets stuck." },
+      { heading: "How RAM works with the CPU", text: "When you launch an app, the OS copies it from SSD → RAM. The CPU then reads and writes directly to RAM at high speed. When you close the app, RAM frees up that space for the next program.", diagramId: "ram-workspace" },
+      { heading: "RAM vs storage: same size, very different speed", text: "16 GB of RAM and 16 GB of SSD space sound the same, but RAM is 100× faster. The price difference reflects this — RAM is more expensive per GB than SSD.", diagramId: "ram-vs-ssd" },
+    ],
+    "11-14": [
+      { heading: "Every running program lives in RAM", text: "When you double-click an executable, the OS loader copies its code and initial data from disk into RAM. The CPU's program counter starts pointing into that RAM region and execution begins. Without RAM, nothing could run." },
+      { heading: "Volatile by design — DRAM physics", text: "RAM cells store bits as tiny electrical charges that leak away in milliseconds. The memory controller must constantly 'refresh' every row to keep data alive. This refresh cycle is why RAM needs constant power.", diagramId: "ram-workspace" },
+      { heading: "What happens when RAM fills up?", text: "The OS uses virtual memory — it pages the least-used RAM chunks to disk (the swap file). This saves you from crashes but makes the computer feel slow, because now the CPU is doing those slow storage trips RAM was supposed to prevent.", diagramId: "ram-vs-ssd" },
+      { heading: "Real-world RAM decisions", text: "16 GB handles most tasks (Chrome tabs are notorious RAM eaters — each tab is a separate process). 32 GB suits video editing and software development. Servers use hundreds of GB of ECC RAM (Error-Correcting Code) to silently fix bit flips from cosmic rays." },
+    ],
+    "15-18": [
+      { heading: "DRAM — the leaky capacitor problem", text: "Each DRAM bit is a 1T1C cell: one transistor + one capacitor. Capacitors leak charge, so bits fade. The memory controller refreshes all rows every 64 ms. DDR (Double Data Rate) sends data on both clock edges, doubling bandwidth without raising frequency." },
+      { heading: "DDR4 vs DDR5 — the architecture shift", text: "DDR4 runs at 1.2V, 2133–3600 MT/s, single 64-bit channel. DDR5 drops to 1.1V, runs at 4800–8400 MT/s, and splits into two independent 32-bit sub-channels — higher bandwidth and better parallelism. DDR5 also adds on-die ECC to catch single-bit errors before they reach the CPU.", diagramId: "ram-workspace" },
+      { heading: "CAS Latency and the bandwidth vs latency trade-off", text: "RAM specs like CL16-18-18-36 tell you the latency in clock cycles. CAS Latency (CL) is the gap between requesting a column address and receiving the data. Faster RAM (higher MT/s) often has higher CL — the absolute latency in nanoseconds (CL ÷ frequency × 2 × 1000) matters more than raw MT/s for latency-sensitive workloads.", diagramId: "ram-vs-ssd" },
+      { heading: "Beyond DRAM — LPDDR, GDDR, HBM", text: "LPDDR (Low Power) is soldered on phones and thin laptops. GDDR6X is the wide-bus DRAM on GPUs — 384-bit bus on an RTX 4090 gives 1 TB/s bandwidth. HBM (High Bandwidth Memory) stacks DRAM dies vertically with 1024-bit buses — used in AI accelerators and high-end server GPUs for maximum bandwidth per watt." },
+    ],
+  },
   story: {
     "5-7":
       "RAM is like your study table! When you're doing homework, you take your books OUT of the cupboard and put them ON the table so you can work with them easily. When you finish and close your books, the table is empty again. RAM works the same way — it holds the things your computer is currently using. When you turn off your computer, the table clears!",

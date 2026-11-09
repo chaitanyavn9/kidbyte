@@ -4,6 +4,32 @@ const lesson: Lesson = {
   title: "What is a GPU?",
   emoji: "🎨",
   category: "components",
+  narrative: {
+    "5-7": [
+      { heading: "Imagine painting a giant wall with a single brush…", text: "If you had to colour every dot on a huge painting one at a time, it would take forever. But what if you had thousands of tiny brushes all working at once? That's exactly how a GPU works — it draws millions of dots on your screen simultaneously." },
+      { heading: "Why can't the CPU do this?", text: "The CPU is like a genius scientist who solves one hard problem at a time. But a game screen has over 2 million dots that all need new colours 60 times every second. The GPU has thousands of little workers for exactly that job.", diagramId: "gpu-vs-cpu" },
+      { heading: "Watch a scene being built", text: "First the GPU figures out the shapes of everything in the scene. Then it calculates the colours — how light bounces off each surface. It all happens so fast that your eyes see smooth movement.", diagramId: "gpu-render-pipeline" },
+      { heading: "In your daily life…", text: "Games, YouTube videos, and even smooth phone scrolling are all GPU work. AI image generators also use GPUs — they need millions of maths calculations happening at once, just like drawing a picture." },
+    ],
+    "8-10": [
+      { heading: "Your screen has over 2 million pixels…", text: "A 1080p screen is 1920 × 1080 = more than 2 million dots. In a 60 fps game, the GPU must recalculate every dot's colour 60 times per second — over 120 million colour decisions every second." },
+      { heading: "CPU vs GPU — expert vs team", text: "A CPU has 8–16 powerful cores that handle complex tasks one at a time. A GPU has thousands of small, simple cores. For graphics — and AI — thousands of simple workers beat a few powerful ones.", diagramId: "gpu-vs-cpu" },
+      { heading: "The render pipeline", text: "Every game frame goes through stages: 3D shapes → flatten to 2D → add colours and lighting → output to screen. The GPU runs all these stages in parallel across millions of triangles and pixels.", diagramId: "gpu-render-pipeline" },
+      { heading: "Beyond gaming", text: "GPUs now power AI training, video editing, and even weather simulation. Any task that can be split into millions of similar calculations benefits from a GPU." },
+    ],
+    "11-14": [
+      { heading: "Parallelism is the GPU's core design", text: "CPU cores execute instructions sequentially and use branch prediction for speed. GPU shader cores are designed for SIMT — Single Instruction, Multiple Threads — running hundreds of threads on the same instruction simultaneously but with different data." },
+      { heading: "The graphics pipeline in depth", text: "Vertex shader → Rasterisation → Fragment/Pixel shader → Output. Each stage is a mini-program (shader) in HLSL or GLSL. Modern GPUs run all stages in parallel across all triangles.", diagramId: "gpu-render-pipeline" },
+      { heading: "Core count comparison", text: "An RTX 4090 has 16,384 CUDA cores. An i9 CPU has 24 cores. Each GPU core is simpler — lower clock, no branch prediction — but the sheer count overwhelms any CPU for parallel work.", diagramId: "gpu-vs-cpu" },
+      { heading: "VRAM and bandwidth", text: "GPUs have their own fast RAM — GDDR6/GDDR6X — on the chip itself (8–24 GB). The 4090's 384-bit memory bus delivers ~1 TB/s bandwidth, because shaders constantly read textures and write frame buffers." },
+    ],
+    "15-18": [
+      { heading: "SIMT and warp execution", text: "GPU threads are grouped into warps of 32 (NVIDIA) or wavefronts of 64 (AMD). All threads in a warp execute the same instruction. Branch divergence causes thread masking — inactive threads still waste cycles — so GPU code avoids if-else branching." },
+      { heading: "Hardware-accelerated rasterisation and ray tracing", text: "Triangle setup, edge walking, and depth testing are fixed-function hardware. Since 2018, RT Cores (NVIDIA) and Ray Accelerators (AMD) handle BVH traversal in hardware for real-time ray tracing.", diagramId: "gpu-render-pipeline" },
+      { heading: "GPGPU — GPUs for AI and science", text: "CUDA (NVIDIA) and ROCm/HIP (AMD) expose the GPU as a parallel compute engine. PyTorch and TensorFlow compile neural network operations to optimised CUDA kernels. cuBLAS handles the matrix multiplications at the core of transformer attention.", diagramId: "gpu-vs-cpu" },
+      { heading: "Memory hierarchy", text: "GPU threads access: Registers (fastest, per-thread) → Shared memory/L1 cache (per SM) → L2 (chip-wide) → GDDR VRAM (~1 TB/s) → system RAM over PCIe (~32 GB/s). Coalesced memory access — threads reading adjacent addresses — is the primary GPU optimisation technique." },
+    ],
+  },
   story: {
     "5-7": "The GPU is like a super-fast artist inside your computer! Every time you see a picture, a game, or a video on your screen, the GPU painted it. It paints millions of tiny dots (pixels) every single second. The CPU tells it what to paint, and the GPU paints it — really, really fast!",
     "8-10": "GPU stands for Graphics Processing Unit. While the CPU is like a single brilliant brain, the GPU is like thousands of tiny workers all painting at the same time. This is why games look so smooth — the GPU redraws the entire screen 60 or more times every second! Without a GPU, your screen would look blocky and slow.",

@@ -25,6 +25,16 @@ export interface KeyFact {
   detail?: string;
 }
 
+/* One step in a guided narrative — text + optional inline diagram */
+export interface NarrativeStep {
+  /* Label shown as a chapter heading in the story */
+  heading: string;
+  /* The body text for this step (supports **bold** markdown) */
+  text: string;
+  /* Registered diagram id — rendered inline below the text */
+  diagramId?: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -32,6 +42,8 @@ export interface Lesson {
   category: string;
   story: Partial<Record<AgeGroup, string>>;
   analogy: Partial<Record<AgeGroup, string>>;
+  /* Structured narrative — overrides plain `story` text when present */
+  narrative?: Partial<Record<AgeGroup, NarrativeStep[]>>;
   funFact?: string;
   photo?: string;       // real component image URL
   photoAlt?: string;

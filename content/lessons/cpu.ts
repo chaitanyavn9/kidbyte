@@ -5,6 +5,141 @@ const lesson: Lesson = {
   title: "What is a CPU?",
   emoji: "🧠",
   category: "components",
+  narrative: {
+    "5-7": [
+      {
+        heading: "Imagine you want to do anything at all",
+        text: `Think about everything you do in a day. You wake up, you eat breakfast, you open a game, you type a message to a friend.
+
+Now think about your computer doing the same kinds of things. When you click a button, something has to understand your click. When you open a game, something has to run it. When you type a letter, something has to figure out which letter it is and show it on screen.
+
+**Who does all of that?** One incredibly important part inside your computer — called the CPU.`,
+        diagramId: "cpu-why-we-need",
+      },
+      {
+        heading: "The CPU is the computer's brain",
+        text: `CPU stands for **Central Processing Unit**. The word "central" means it is in the middle of everything. All instructions — from every app, every click, every keystroke — must pass through the CPU.
+
+It is like your brain. When you decide to wave your hand, your brain sends the signal to your arm. When a game needs to calculate where a ball flies, the CPU does that calculation. When you open a photo, the CPU figures out how to show it on the screen.
+
+**Without a CPU, your computer cannot do a single thing.** It is the heart of all activity.`,
+      },
+      {
+        heading: "What happens inside the CPU every second",
+        text: `The CPU has one job it repeats over and over: **read an instruction, understand it, do it, repeat**.
+
+It reads billions of these tiny instructions every single second. That is what the GHz number on a CPU means — a 3 GHz CPU does **3 billion** tiny steps every second!
+
+Each step might be tiny — like "add these two numbers" or "check if this value is bigger than that one" — but do billions of them together and you can run a whole game, play a video, and browse the web all at once.`,
+        diagramId: "cpu-fetch-decode-execute",
+      },
+      {
+        heading: "In your daily life, the CPU is always working",
+        text: `Every single thing you do on your computer or phone involves the CPU:
+
+**Opening YouTube** — the CPU loads the page, calculates the layout, starts the video.
+
+**Playing a game** — the CPU calculates where every character moves, what happens when you jump, whether you hit an enemy.
+
+**Typing a message** — every key you press is detected by the CPU, which then tells the screen to show that letter.
+
+The CPU is so fast that all of this happens so quickly that it feels instant to you!`,
+      },
+    ],
+
+    "8-10": [
+      {
+        heading: "Think about all the things happening at once on your screen",
+        text: `Right now, while reading this, your computer might be: playing background music, checking for notifications, loading images, responding to your mouse movement, and saving files in the background.
+
+None of those things happen by magic. Each one requires a **processor** — a part of the computer that processes (works on) instructions.
+
+The question is: who is doing all of this work at the same time? The answer is the **CPU — Central Processing Unit**.`,
+        diagramId: "cpu-why-we-need",
+      },
+      {
+        heading: "What is a CPU and why every computer needs one",
+        text: `The **CPU (Central Processing Unit)** is the main chip inside your computer or phone that runs all software. Every program you open — games, browsers, apps — is ultimately a list of instructions. The CPU reads those instructions and executes them.
+
+Think of it like a super-fast restaurant kitchen. Orders (instructions) come in, the kitchen (CPU) processes them, and the results come out. The faster the kitchen, the more orders it can handle at once.
+
+**Without a CPU, a computer is just a pile of metal and plastic.** It cannot run a single app, show a single pixel on screen, or respond to a single key press.`,
+      },
+      {
+        heading: "How the CPU works: Fetch → Decode → Execute",
+        text: `The CPU follows a cycle called **Fetch-Decode-Execute**. It repeats this cycle billions of times every second.
+
+**Fetch** — the CPU goes to RAM (memory) and picks up the next instruction waiting to run. Like picking up the next recipe card in the kitchen.
+
+**Decode** — the CPU reads the instruction and figures out what it means: "add two numbers", "load a value from memory", "jump to another part of the program". Like reading and understanding a recipe step.
+
+**Execute** — the CPU actually does the work: performs the calculation, reads from memory, writes the result. Like actually cooking the dish.
+
+Then it immediately starts again on the next instruction. A modern CPU running at 3 GHz does this **3 billion times per second**.`,
+        diagramId: "cpu-fetch-decode-execute",
+      },
+      {
+        heading: "The CPU in your everyday life",
+        text: `Here are real examples of CPU work happening every second you use your device:
+
+**Scrolling a webpage** — the CPU calculates exactly which pixels to move and by how much, then tells the GPU (graphics card) what to draw.
+
+**Loading a game level** — the CPU reads thousands of game object positions, calculates physics, checks for collisions, and updates the game world — all 60 times per second for smooth gameplay.
+
+**Playing a video call** — the CPU compresses your camera image, sends it over the network, receives the other person's compressed video, decompresses it, and shows it on your screen — all simultaneously.
+
+This is why a faster CPU makes your computer feel snappier, and why a slow or overheated CPU makes everything feel sluggish.`,
+      },
+    ],
+
+    "11-14": [
+      {
+        heading: "Every program you run is a list of instructions",
+        text: `When you open an app — a game, a browser, a text editor — what actually happens? The app's code is loaded from storage into RAM. That code is a sequence of machine instructions: binary patterns that mean things like "add register A to register B", "load from memory address X", "jump to instruction Y if the result was zero".
+
+Something has to read those instructions one by one, decode what they mean, and execute them.
+
+That something is the **CPU — Central Processing Unit**. It is the chip that processes every instruction in every program running on your computer.`,
+        diagramId: "cpu-why-we-need",
+      },
+      {
+        heading: "The Fetch-Decode-Execute cycle",
+        text: `The CPU's core operation is a loop called the **Fetch-Decode-Execute cycle**:
+
+**Fetch**: The Program Counter (PC) register holds the memory address of the next instruction. The CPU reads that address from RAM into the Instruction Register (IR), then increments the PC to point at the next instruction.
+
+**Decode**: The Control Unit decodes the binary instruction. It identifies the opcode (what operation: ADD, LOAD, STORE, JUMP, COMPARE) and the operands (which registers or memory addresses to use). It then activates the appropriate CPU circuits.
+
+**Execute**: The ALU (Arithmetic Logic Unit) performs the operation — arithmetic, logic, memory read/write, or a branch. The result goes into a register or back to RAM.
+
+A modern 3 GHz CPU repeats this loop **3,000,000,000 times per second**.`,
+        diagramId: "cpu-fetch-decode-execute",
+      },
+      {
+        heading: "Cores, cache, and clock speed",
+        text: `Modern CPUs have several features that make them dramatically faster than simply running one instruction at a time:
+
+**Cores**: Each core is a complete, independent processor. A quad-core CPU can execute 4 instruction streams simultaneously — running 4 different programs (or 4 threads of one program) at the same time, literally in parallel.
+
+**Cache**: RAM is fast, but the CPU is much faster. Cache is ultra-fast memory built directly into the CPU chip. L1 cache (32–64 KB, 4 cycles) holds the most recent instructions and data. L2 (256 KB–1 MB, 12 cycles) is a backup. L3 (8–64 MB, 40 cycles) is shared between all cores. Without cache, the CPU would spend most of its time waiting for RAM (100+ cycles per access).
+
+**Clock Speed (GHz)**: Each clock cycle, the CPU can complete one or more stages of the pipeline. A higher GHz means more cycles per second, meaning more instructions can be executed. A 5 GHz CPU is 67% faster per core than a 3 GHz one.`,
+      },
+      {
+        heading: "In daily life: everything you do involves millions of CPU instructions",
+        text: `Here are real operations and what happens under the hood:
+
+**You click "Save"**: Your text editor calls a system call (write()) → the OS kernel finds the file on the SSD → the CPU executes thousands of instructions to handle buffering, encoding, and storage I/O.
+
+**A game renders a frame**: The CPU calculates AI decisions, physics (positions, velocities, collisions), and input handling → sends draw calls to the GPU → 60 times per second. At 60 fps, the CPU has 16.67 milliseconds per frame.
+
+**You compile code**: A compiler runs millions of instructions to parse your source code, build an AST, optimise it, and emit machine code — all done by the CPU reading and processing text.
+
+This is why a faster CPU with more cores makes development, gaming, and video editing noticeably faster — these are all CPU-bound workloads.`,
+      },
+    ],
+  },
+
   story: {
     "5-7":
       "The CPU is the brain of your computer! Just like your brain tells your hands to wave, your legs to run, and your mouth to speak — the CPU tells every part of the computer what to do. Without a brain, your body can't do anything. Without a CPU, a computer can't do anything either!",
